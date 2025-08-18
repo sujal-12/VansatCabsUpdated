@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Autocomplete Test</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8K8LRL9aOacWYYxIQn1YyeaJQVRzJqvM&libraries=places"
+        async defer>
+        </script>
+    <script>
+        function initAutocomplete() {
+            const fromInput = document.getElementById("fromInput");
+            const toInput = document.getElementById("toInput");
+
+            new google.maps.places.Autocomplete(fromInput);
+            new google.maps.places.Autocomplete(toInput);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            if (typeof google === 'object' && typeof google.maps === 'object') {
+                initAutocomplete();
+            } else {
+                // Retry initialization if Google Maps hasn't loaded yet
+                const interval = setInterval(function () {
+                    if (typeof google === 'object' && typeof google.maps === 'object') {
+                        clearInterval(interval);
+                        initAutocomplete();
+                    }
+                }, 100);
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <input id="fromInput" type="text" placeholder="From">
+    <input id="toInput" type="text" placeholder="To">
+</body>
+
+</html>

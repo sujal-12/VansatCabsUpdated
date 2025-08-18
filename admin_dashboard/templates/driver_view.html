@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ node.nodeCity }} Drivers{% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid page-body-wrapper">
+    {% include "sidebar.html" %}
+
+    <div class="main-panel w-100">
+        <div class="content-wrapper">
+            <!-- Section: Driver Details -->
+            <div class="row mt-5">
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0 driver-details-header">
+                                Driver Details - {{ driver.driverfirstname }} {{ driver.driverlastname }}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Driver Information Section -->
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card personal-info-card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0 info-section-header">Personal Information</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="detail-item mb-3"><strong>Full Name:</strong> {{ driver.driverfirstname }} {{ driver.driverlastname }}</div>
+                                            <div class="detail-item mb-3"><strong>Mobile No:</strong> {{ driver.drivermobileno }}</div>
+                                            <div class="detail-item mb-3"><strong>City:</strong> {{ driver.drivercity }}</div>
+                                            <div class="detail-item mb-3"><strong>Address:</strong> {{ driver.driveraddress }}</div>
+                                            <div class="detail-item mb-3"><strong>Pin Code:</strong> {{ driver.driverpincode }}</div>
+                                            <div class="detail-item mb-3"><strong>State:</strong> {{ driver.driverstate }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Driver Identification Section -->
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card identification-card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0 info-section-header">Identification Details</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="detail-item mb-3"><strong>License No:</strong> {{ driver.driverlicense_number }}</div>
+                                            <div class="detail-item mb-3"><strong>Aadhar No:</strong> {{ driver.driver_aadhar_number }}</div>
+                                            <div class="detail-item mb-3"><strong>Bank Name:</strong> {{ driver.driverbank_name }}</div>
+                                            <div class="detail-item mb-3"><strong>Account No:</strong> {{ driver.driveraccount_number }}</div>
+                                            <div class="detail-item mb-3"><strong>Branch Name:</strong> {{ driver.driverbranch_name }}</div>
+                                            <div class="detail-item mb-3"><strong>IFSC Code:</strong> {{ driver.driverifsc_code }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+                            <div class="row">
+                                <!-- Driver Information Section -->
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card personal-info-card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0 info-section-header">Vehicle Info</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="detail-item mb-3"><strong>Vehicle Type:</strong> {{ driver.vehicletype }}</div>
+                                            <div class="detail-item mb-3"><strong>Vehicle Number:</strong> {{ driver.vehicle_number }}</div>
+                                            <div class="detail-item mb-3"><strong>Vehicle Name:</strong> {{ driver.vehicle_name }}</div>
+                                            <div class="detail-item mb-3"><strong>Registration Date:</strong> {{ driver.registration_date }}</div>
+                                            <div class="detail-item mb-3"><strong>Registration Expiry:</strong> {{ driver.registration_expiry_date }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Driver Identification Section -->
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card identification-card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0 info-section-header">Insurance & Fitness</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="detail-item mb-3"><strong>Insurance Start:</strong> {{ driver.insurance_start_date }}</div>
+                                            <div class="detail-item mb-3"><strong>Insurance Expiry:</strong> {{ driver.insurance_expiry_date }}</div>
+                                            <div class="detail-item mb-3"><strong>Fitness Cert. Date:</strong> {{ driver.fitness_certificate_date }}</div>
+                                            <div class="detail-item mb-3"><strong>Fitness Expiry:</strong> {{ driver.fitness_certificate_expiry_date }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Uploaded Documents -->
+                            <div class="row mt-4">
+                                <div class="col-lg-12">
+                                    <div class="card">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0 info-section-header">Uploaded Documents</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row text-center">
+                                                <!-- Profile Picture -->
+                                                <div class="col-md-4 mb-4">
+                                                    <strong>Profile Picture:</strong><br>
+                                                    {% if driver.profile_picture %}
+                                                        <img src="{{ driver.profile_picture.url }}" alt="Profile" class="img-fluid zoomable-img" style="max-height:200px; cursor:pointer;">
+                                                    {% else %}
+                                                        <p>No profile picture.</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                <!-- License Image -->
+                                                <div class="col-md-4 mb-4">
+                                                    <strong>License Image:</strong><br>
+                                                    {% if driver.license_picture %}
+                                                        <img src="{{ driver.license_picture.url }}" alt="License" class="img-fluid zoomable-img" style="max-height:200px; cursor:pointer;">
+                                                    {% else %}
+                                                        <p>No license image.</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                <!-- Aadhar Image -->
+                                                <div class="col-md-4 mb-4">
+                                                    <strong>Aadhar Image:</strong><br>
+                                                    {% if driver.aadhar_picture %}
+                                                        <img src="{{ driver.aadhar_picture.url }}" alt="Aadhar" class="img-fluid zoomable-img" style="max-height:200px; cursor:pointer;">
+                                                    {% else %}
+                                                        <p>No Aadhar image.</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                <!-- Tax Receipt -->
+                                                <div class="col-md-4 mb-4">
+                                                    <strong>Tax Receipt:</strong><br>
+                                                    {% if driver.vehicle_tax_receipt %}
+                                                        <img src="{{ driver.vehicle_tax_receipt.url }}" alt="Tax Receipt" class="img-fluid zoomable-img" style="max-height:200px; cursor:pointer;">
+                                                    {% else %}
+                                                        <p>No tax receipt.</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                <!-- Insurance Image -->
+                                                <div class="col-md-4 mb-4">
+                                                    <strong>Insurance Image:</strong><br>
+                                                    {% if driver.vehicle_insurance %}
+                                                        <img src="{{ driver.vehicle_insurance.url }}" alt="Insurance" class="img-fluid zoomable-img" style="max-height:200px; cursor:pointer;">
+                                                    {% else %}
+                                                        <p>No insurance image.</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                <!-- Fitness Certificate -->
+                                                <div class="col-md-4 mb-4">
+                                                    <strong>Fitness Certificate:</strong><br>
+                                                    {% if driver.fitness_certificate %}
+                                                        <img src="{{ driver.fitness_certificate.url }}" alt="Fitness Certificate" class="img-fluid zoomable-img" style="max-height:200px; cursor:pointer;">
+                                                    {% else %}
+                                                        <p>No fitness certificate.</p>
+                                                    {% endif %}
+                                                </div>
+
+                                                <!-- PUC Certificate -->
+                                                <div class="col-md-4 mb-4">
+                                                    <strong>PUC Certificate:</strong><br>
+                                                    {% if driver.puc_certificate %}
+                                                        <img src="{{ driver.puc_certificate.url }}" alt="PUC Certificate" class="img-fluid zoomable-img" style="max-height:200px; cursor:pointer;">
+                                                    {% else %}
+                                                        <p>No PUC certificate.</p>
+                                                    {% endif %}
+                                                </div>
+                                            </div> <!-- row -->
+                                        </div> <!-- card-body -->
+                                    </div> <!-- card -->
+                                </div> <!-- col -->
+                            </div> <!-- row -->
+                        </div> <!-- card-body -->
+                    </div> <!-- card -->
+                </div> <!-- col-lg-12 -->
+            </div> <!-- row -->
+
+            <!-- Remarks Section -->
+            <div class="row mt-4">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0 info-section-header">Remarks</h6>
+                        </div>
+                        <div class="card-body">
+                            <!-- Form -->
+                            <form method="post" class="mb-4">
+                                {% csrf_token %}
+                                <label for="remark_text"><strong>Add Remark:</strong></label>
+                                <textarea id="remark_text" name="remark_text" class="form-control" rows="3" placeholder="1. ...&#10;2. ..."></textarea>
+                                <button type="submit" class="btn btn-sm btn-primary mt-2">Submit</button>
+                            </form>
+
+                            <!-- Display Remarks -->
+                            {% if remarks %}
+                                <ul class="list-group">
+                                    {% for remark in remarks %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>{{ remark.created_at|date:"d M Y, H:i" }}</strong><br>
+                                                {{ remark.remark_text|linebreaks }}
+                                            </div>
+                                            <form method="post" onsubmit="return confirm('Are you sure you want to delete this remark?');">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="delete_remark_id" value="{{ remark.id }}">
+                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                            </form>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No remarks added yet.</p>
+                            {% endif %}
+                        </div> <!-- card-body -->
+                    </div> <!-- card -->
+                </div> <!-- col -->
+            </div> <!-- row -->
+        </div> <!-- content-wrapper -->
+    </div> <!-- main-panel -->
+</div> <!-- container-fluid -->
+
+<!-- Lightbox viewer -->
+<div id="lightbox" class="lightbox-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1050; justify-content:center; align-items:center;">
+    <span class="lightbox-close" onclick="closeLightbox()" style="position:absolute; top:20px; right:30px; color:#fff; font-size:30px; cursor:pointer;">&times;</span>
+    <img class="lightbox-content" id="lightbox-img" style="max-width:90%; max-height:90%; transform-origin:center center;">
+</div>
+
+<!-- JavaScript for zoom & modal -->
+<script>
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+    let currentZoom = 1;
+
+    document.querySelectorAll('.zoomable-img').forEach(img => {
+        img.addEventListener('click', function (e) {
+            e.stopPropagation();
+            lightbox.style.display = "flex";
+            lightboxImg.src = this.src;
+            currentZoom = 1;
+            lightboxImg.style.transform = `scale(${currentZoom})`;
+        });
+    });
+
+    function closeLightbox() {
+        lightbox.style.display = "none";
+    }
+
+    // Zoom in/out with mouse scroll
+    lightbox.addEventListener('wheel', function (e) {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+            currentZoom += 0.1;
+        } else {
+            currentZoom = Math.max(1, currentZoom - 0.1);
+        }
+        lightboxImg.style.transform = `scale(${currentZoom})`;
+    });
+</script>
+
+
+<!-- Zoomable image modal CSS -->
+<style>
+    .lightbox-overlay {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        padding-top: 30px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: rgba(0, 0, 0, 0.9);
+    }
+
+    .lightbox-content {
+        margin: auto;
+        display: block;
+        max-width: 90%;
+        max-height: 90%;
+        transition: transform 0.25s ease;
+        cursor: grab;
+    }
+
+    .lightbox-close {
+        position: absolute;
+        top: 30px;
+        right: 50px;
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 10000;
+    }
+</style>
+
+
+
+<style>
+    /* General Styles */
+    body {
+        font-family: 'Arial', sans-serif;
+        color: #333;
+    }
+
+    .card-header {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .card-body {
+        background-color: #f9f9f9;
+    }
+
+    .text-bold {
+        font-weight: 600;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1rem;
+        margin-bottom: 10px;
+        padding: 5px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .detail-item strong {
+        min-width: 150px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .detail-item span {
+        flex: 1;
+        text-align: right;
+    }
+
+
+    /* Driver Details Heading */
+    .driver-details-header {
+        font-size: 1.6rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    /* Info Section Header */
+    .info-section-header {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: rgb(0, 64, 255);
+    }
+
+    /* Personal Information Card */
+    .personal-info-card .card-header {
+        background-color: #f0f0f0;
+    }
+
+    /* Identification Card */
+    .identification-card .card-header {
+        background-color: #f0f0f0;
+    }
+
+    /* Image Section */
+    .image-item {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .image-item img {
+        width: 100%;
+        max-width: 220px;
+        max-height: 180px;
+        object-fit: contain;
+        border: 2px solid rgb(0, 81, 255);
+        border-radius: 10px;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .profile-img {
+        max-width: 250px;
+    }
+
+    .license-img {
+        max-width: 250px;
+    }
+
+    .aadhar-img {
+        max-width: 250px;
+    }
+
+    /* No Image Placeholder */
+    .no-image {
+        font-style: italic;
+        color: #999;
+    }
+
+    /* Card Shadows and Border */
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 767px) {
+        .card-header {
+            font-size: 1.1rem;
+        }
+
+        .card-body {
+            padding: 10px;
+        }
+
+        .driver-details-header {
+            font-size: 1.4rem;
+        }
+
+        .info-section-header {
+            font-size: 1.1rem;
+        }
+
+        .image-item img {
+            width: 100%;
+            max-width: 220px;
+            max-height: 180px;
+            object-fit: contain;
+            border: 2px solid rgb(0, 81, 255);
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto;
+        }
+
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,366 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Trips</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Global Styles & Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+            padding-bottom: 70px;
+        }
+
+        /* Header Section (Yellow Background) */
+        .header-section {
+            background-color: #55b77e;
+            padding: 30px 20px 20px;
+            color: #333;
+            position: relative;
+            z-index: 5;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: none;
+        }
+
+        .back-arrow {
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #333;
+            text-decoration: none;
+            flex-shrink: 0;
+            margin-right: 15px;
+        }
+
+        .page-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #333;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .list-icon {
+            margin-left: 10px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .header-section .empty-div {
+            width: 1.5em;
+            flex-shrink: 0;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #f8f8f8;
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Date Picker Section */
+        .date-picker-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .date-picker-section label {
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .date-picker-section input[type="date"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            color: #333;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .date-picker-section input[type="date"]:focus {
+            border-color: #55b77e;
+        }
+
+        /* Trips List Section */
+        .trips-list-section {
+            margin-top: 25px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .trips-list {
+            list-style: none;
+            padding: 0;
+            border-radius: 15px;
+        }
+
+        .trip-item {
+            display: flex;
+            flex-direction: column;
+            padding: 15px 20px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .trip-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .trip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .trip-date-time {
+            font-size: 0.9em;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .trip-amount {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        /* Status-specific styling for trip-amount and icons */
+        .trip-item.completed {
+            border-bottom: 8px solid #28a745;
+        }
+        .trip-item.completed .trip-amount {
+            color: #28a745;
+        }
+        .trip-item.completed .location-icon {
+            color: #28a745;
+        }
+
+        .trip-item.pending {
+            border-bottom: 8px solid rgb(255, 184, 20);
+        }
+        .trip-item.pending .trip-amount {
+            color: rgb(255, 184, 20);
+        }
+        .trip-item.pending .location-icon {
+            color: rgb(255, 184, 20);
+        }
+
+        .trip-item.cancelled {
+            border-bottom: 8px solid #dc3545;
+        }
+        .trip-item.cancelled .trip-amount {
+            color: #dc3545;
+        }
+        .trip-item.cancelled .location-icon {
+            color: #dc3545;
+        }
+
+        .trip-driver-name {
+            font-size: 0.95em;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+
+        .trip-locations {
+            font-size: 0.9em;
+            color: #777;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .location-point {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .location-point:last-child {
+            margin-bottom: 0;
+        }
+
+        .location-icon {
+            font-size: 1.2em;
+            margin-right: 8px;
+            width: 1em;
+            text-align: center;
+        }
+
+        .location-point strong {
+            font-weight: 600;
+            color: #333;
+            margin-right: 5px;
+        }
+
+        /* Navigation Bar (Bottom) */
+        .nav-bar {
+            background-color: #55b77e;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 10;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item.active {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .nav-item .icon {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        /* Responsive Adjustments */
+        @media (min-width: 768px) {
+            .header-section,
+            .main-content {
+                padding-left: 40px;
+                padding-right: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-section,
+            .main-content {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <a href="{% url 'settings' %}" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+        <div class="page-title">
+            Trips <span class="list-icon"><i class="fas fa-route"></i></span>
+        </div>
+        <div class="empty-div"></div>
+    </div>
+
+    <div class="main-content">
+        <div class="date-picker-section">
+            <label for="trip-date">Select Date:</label>
+            <input type="date" id="trip-date" value="{{ selected_date|date:'Y-m-d' }}" onchange="this.form.submit()">
+        </div>
+
+        <div class="trips-list-section">
+            <h2 class="section-title">Trips for {{ selected_date|date:"F d, Y" }}</h2>
+            <ul class="trips-list">
+                {% if trips %}
+                    {% for trip in trips %}
+                        <li class="trip-item {{ trip.status|lower }}">
+                            <div class="trip-header">
+                                <span class="trip-date-time">{{ trip.time|date:"h:i A" }}</span>
+                                <span class="trip-amount">
+                                    {{ trip.status }}
+                                </span>
+                            </div>
+                            <div class="trip-driver-name">Driver: {{ trip.driver_name }}</div>
+                            <div class="trip-locations">
+                                <span class="location-point">
+                                    <span class="location-icon"><i class="fas fa-map-marker-alt"></i></span> <strong>From:</strong> {{ trip.from_city }}
+                                </span>
+                                <span class="location-point">
+                                    <span class="location-icon"><i class="fa-solid fa-map-pin"></i></span> <strong>To:</strong> {{ trip.to_city }}
+                                </span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: #777; margin-top: 20px;">No trips found for this date.</p>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <form id="dateForm" method="GET" style="display: none;">
+        <input type="hidden" name="date" id="hiddenDateInput">
+    </form>
+    <script>
+        document.getElementById('trip-date').addEventListener('change', function() {
+            document.getElementById('hiddenDateInput').value = this.value;
+            document.getElementById('dateForm').submit();
+        });
+    </script>
+
+    <div class="nav-bar">
+        <a href="{% url 'mobileapp' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-home"></i></span> <span><b>Home</b></span>
+        </a>
+        <a href="{% url 'notifications' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-bell"></i></span> <span><b>Alerts</b></span>
+        </a>
+        <a href="{% url 'alltrips' %}" class="nav-item active">
+            <span class="icon"><i class="fas fa-map-marked-alt"></i></span> <span><b>Trips</b></span>
+        </a>
+        <a href="{% url 'settings' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-cog"></i></span> <span><b>Settings</b></span>
+        </a>
+    </div>
+</body>
+</html>

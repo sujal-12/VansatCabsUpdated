@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Trip Records{% endblock title %}
+
+{% block content %}
+
+<!-- Custom Switch Styling -->
+<style>
+  .form-switch .form-check-input {
+    margin-left: 7px;
+    width: 36px;
+    height: 18px;
+    background-color: #ddd;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .form-switch .form-check-input:checked {
+    background-color: #28a745;
+  }
+
+  .form-switch .form-check-input::before {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background-color: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+  }
+
+  .form-switch .form-check-input:checked::before {
+    transform: translateX(18px);
+  }
+
+  .form-switch .form-check-label {
+    font-weight: 500;
+    font-size: 13px;
+    margin-left: 8px;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  .form-check.form-switch {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+</style>
+
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap&libraries=places" async
+  defer></script>
+
+<div class="container-fluid page-body-wrapper">
+  {% include "sidebar.html" %}
+  <div class="main-panel">
+    <div class="content-wrapper">
+      <div class="row">
+        <div class="col-lg-12 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h3 class="card-title mb-2">Trip Records</h3>
+                  <p class="card-description mb-2">All the trips available here....</p>
+                </div>
+                <a href="{% url 'add_employee' %}" class="btn btn-primary">
+                  + Add New Employee</a>
+
+              </div>
+
+              <div class="table-responsive mt-4">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>City</th>
+                      <th>Name</th>
+                      <th>Mobile Number</th>
+                      <th>Address</th>
+                      <th style="width:140px;">Actions</th>
+                      <th style="width:180px;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for emp in employees %}
+                    <tr>
+                      <td>{{ emp.empNodeID.nodeCity }}</td>
+                      <td>{{ emp.employeeName }}</td>
+                      <td>{{ emp.employeeMobile }}</td>
+                      <td>{{ emp.employeeAddress }}</td>
+                      <td class="actions-cell">
+                        <div class="d-flex flex-row align-items-center">
+                          <button type="button" class="btn btn-sm btn-outline-info btn-fw mx-1 view-employee-btn"
+                            data-bs-toggle="modal" data-bs-target="#viewEmployeeModal"
+                            data-name="{{ emp.employeeName }}" data-email="{{ emp.employeeEmail }}"
+                            data-mobile="{{ emp.employeeMobile }}" data-role="{{ emp.employeeRole }}"
+                            data-address="{{ emp.employeeAddress }}" data-salary="{{ emp.empSalary }}"
+                            data-joining="{{ emp.empJoiningDate }}" data-aadhar="{{ emp.employeeAadhar }}"
+                            data-city="{{ emp.empNodeID.nodeCity }}"
+                            data-status="{% if emp.is_available %}Available{% else %}Not Available{% endif %}">
+                            <i class="mdi mdi-share"></i> view
+                          </button>
+
+
+                          <button type="button" class="btn btn-sm btn-outline-success btn-fw mx-1 edit-node-btn"
+                            data-bs-toggle="modal" data-bs-target="#editEmployeeModal" data-emp-id="{{ emp.id }}"
+                            data-employee-name="{{ emp.employeeName }}" data-employee-email="{{ emp.employeeEmail }}"
+                            data-employee-mobile="{{ emp.employeeMobile }}" data-employee-role="{{ emp.employeeRole }}"
+                            data-employee-address="{{ emp.employeeAddress }}" data-emp-salary="{{ emp.empSalary }}"
+                            data-emp-joining="{{ emp.empJoiningDate|date:'Y-m-d' }}"
+                            data-employee-aadhar="{{ emp.employeeAadhar }}">
+                            <i class="mdi mdi-grease-pencil"></i> Edit
+                          </button>
+
+
+                          <a href="{% url 'delete_employee' emp.id %}" class="btn btn-sm btn-outline-danger btn-fw mx-1"
+                            onclick="return confirm('Are you sure you want to delete this employee?');">
+                            <i class="mdi mdi-delete"></i> Delete
+                          </a>
+
+                        </div>
+                      </td>
+
+                      <td>
+                        <div class="form-check form-switch d-flex align-items-center">
+                          <input class="form-check-input status-toggle" type="checkbox" id="statusSwitch{{ emp.id }}"
+                            data-emp-id="{{ emp.id }}" {% if emp.is_available %}checked{% endif %}>
+
+                          <label class="form-check-label ms-2 mb-0" for="statusSwitch{{ emp.id }}"
+                            id="statusLabel{{ emp.id }}">
+                            {% if emp.is_available %}
+                            Available
+                            {% else %}
+                            Not Available
+                            {% endif %}
+                          </label>
+                        </div>
+                      </td>
+
+
+
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="6" class="text-center">No employee records found.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View model of form -->
+
+<!-- Employee View Modal -->
+<!-- Employee View Modal -->
+<div class="modal fade" id="viewEmployeeModal" tabindex="-1" aria-labelledby="viewEmployeeModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-centered"> <!-- Centered modal -->
+    <div class="modal-content shadow-lg rounded-3">
+      <div class="modal-header py-2 bg-light border-bottom">
+        <h5 class="modal-title fw-bold text-primary" id="viewEmployeeModalLabel">👤 Employee Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body px-4 py-3">
+        <form class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control form-control-sm readonly-input" id="empName" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input type="text" class="form-control form-control-sm readonly-input" id="empEmail" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Mobile</label>
+            <input type="text" class="form-control form-control-sm readonly-input" id="empMobile" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Role</label>
+            <input type="text" class="form-control form-control-sm readonly-input" id="empRole" readonly>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Address</label>
+            <input type="text" class="form-control form-control-sm readonly-input" id="empAddress" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Salary</label>
+            <input type="text" class="form-control form-control-sm readonly-input" id="empSalary" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Joining Date</label>
+            <input type="text" class="form-control form-control-sm readonly-input" id="empJoining" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Aadhar</label>
+            <input type="text" class="form-control form-control-sm readonly-input" id="empAadhar" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Node City</label>
+            <input type="text" class="form-control form-control-sm readonly-input" id="empCity" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Status</label>
+            <input type="text" class="form-control form-control-sm readonly-input" id="empStatus" readonly>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<style>
+  .readonly-input[readonly] {
+    background-color: #fefefe;
+    border: 1px solid #ccc;
+    color: #555;
+    font-size: 14px;
+  }
+
+  .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e2e2e2;
+  }
+
+  .modal-title {
+    font-size: 18px;
+    color: #2c3e50;
+  }
+
+  .modal-content {
+    border-radius: 12px;
+  }
+
+  .modal-body label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #333;
+  }
+
+  .modal-body input {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+
+  @media (max-width: 576px) {
+    .modal-dialog {
+      margin: 1rem auto;
+    }
+
+    .modal-body .col-md-6,
+    .modal-body .col-md-12 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+</style>
+
+
+
+<!-- JavaScript view the form -->
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const viewButtons = document.querySelectorAll('.view-employee-btn');
+
+    viewButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        document.getElementById('empName').value = button.dataset.name;
+        document.getElementById('empEmail').value = button.dataset.email;
+        document.getElementById('empMobile').value = button.dataset.mobile;
+        document.getElementById('empRole').value = button.dataset.role;
+        document.getElementById('empAddress').value = button.dataset.address;
+        document.getElementById('empSalary').value = button.dataset.salary;
+        document.getElementById('empJoining').value = button.dataset.joining;
+        document.getElementById('empAadhar').value = button.dataset.aadhar;
+        document.getElementById('empCity').value = button.dataset.city;
+        document.getElementById('empStatus').value = button.dataset.status;
+      });
+    });
+  });
+</script>
+
+<!-- modal form of edit option -->
+
+<div class="modal fade" id="editEmployeeModal" tabindex="-1" aria-labelledby="editEmployeeModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <form id="editEmployeeForm" method="POST" action="{% url 'edit_employee' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="editEmployeeModalLabel">Edit Employee Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body px-3 py-2">
+          <input type="hidden" name="emp_id" id="editEmpId" />
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="editEmployeeName" class="form-label">Name</label>
+              <input type="text" class="form-control form-control-sm" id="editEmployeeName" name="employeeName"
+                required>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editEmployeeEmail" class="form-label">Email</label>
+              <input type="email" class="form-control form-control-sm" id="editEmployeeEmail" name="employeeEmail"
+                required>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editEmployeeMobile" class="form-label">Mobile</label>
+              <input type="text" class="form-control form-control-sm" id="editEmployeeMobile" name="employeeMobile"
+                maxlength="10" required>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editEmployeeRole" class="form-label">Role</label>
+              <input type="text" class="form-control form-control-sm" id="editEmployeeRole" name="employeeRole"
+                required>
+            </div>
+
+            <div class="col-12">
+              <label for="editEmployeeAddress" class="form-label">Address</label>
+              <textarea class="form-control form-control-sm" id="editEmployeeAddress" name="employeeAddress" rows="2"
+                required></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editEmpSalary" class="form-label">Salary</label>
+              <input type="number" step="0.01" class="form-control form-control-sm" id="editEmpSalary" name="empSalary"
+                required>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editEmpJoiningDate" class="form-label">Joining Date</label>
+              <input type="date" class="form-control form-control-sm" id="editEmpJoiningDate" name="empJoiningDate"
+                required>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editEmployeeAadhar" class="form-label">Aadhar</label>
+              <input type="text" class="form-control form-control-sm" id="editEmployeeAadhar" name="employeeAadhar"
+                maxlength="12" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript for edit  the form -->
+
+<script>
+  var editEmployeeModal = document.getElementById('editEmployeeModal');
+  editEmployeeModal.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget;
+
+    // Extract info from data attributes
+    var empId = button.getAttribute('data-emp-id');
+    var name = button.getAttribute('data-employee-name');
+    var email = button.getAttribute('data-employee-email');
+    var mobile = button.getAttribute('data-employee-mobile');
+    var role = button.getAttribute('data-employee-role');
+    var address = button.getAttribute('data-employee-address');
+    var salary = button.getAttribute('data-emp-salary');
+    var joining = button.getAttribute('data-emp-joining');
+    var aadhar = button.getAttribute('data-employee-aadhar');
+
+    // Populate modal fields
+    document.getElementById('editEmpId').value = empId;
+    document.getElementById('editEmployeeName').value = name;
+    document.getElementById('editEmployeeEmail').value = email;
+    document.getElementById('editEmployeeMobile').value = mobile;
+    document.getElementById('editEmployeeRole').value = role;
+    document.getElementById('editEmployeeAddress').value = address;
+    document.getElementById('editEmpSalary').value = salary;
+    document.getElementById('editEmpJoiningDate').value = joining;
+    document.getElementById('editEmployeeAadhar').value = aadhar;
+  });
+</script>
+
+
+
+<!-- JavaScript to Toggle Status Text -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const toggles = document.querySelectorAll('.status-toggle');
+    toggles.forEach(toggle => {
+      toggle.addEventListener('change', function () {
+        const empId = this.dataset.empId;
+        const label = document.getElementById(`statusLabel${empId}`);
+        const isChecked = this.checked;
+
+        label.textContent = isChecked ? "Available" : "Not Available";
+
+        // Send AJAX request to backend
+        fetch('/update-availability/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')  // Ensure CSRF token is sent
+          },
+          body: JSON.stringify({
+            emp_id: empId,
+            is_available: isChecked
+          })
+        }).then(response => response.json())
+          .then(data => {
+            if (data.status !== 'success') {
+              alert("Error updating status.");
+            }
+          }).catch(error => {
+            alert("Error connecting to server.");
+          });
+      });
+    });
+
+    // Helper to get CSRF token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  });
+</script>
+
+
+{% endblock content %}

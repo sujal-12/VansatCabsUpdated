@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VansatCabs Settings</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', 'Arial', sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #333;
+      padding-bottom: 70px;
+    }
+
+    .header-section {
+      background-color: #55b77e;
+      padding: 30px 20px 20px;
+      color: #333;
+      position: relative;
+      z-index: 5;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-arrow {
+      font-size: 1.5em;
+      cursor: pointer;
+      color: #333;
+      text-decoration: none;
+      flex-shrink: 0;
+      margin-right: 15px;
+    }
+
+    .setting-title {
+      font-size: 1.5em;
+      font-weight: 700;
+      color: #333;
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .setting-title .icon {
+      margin-left: 10px;
+      font-size: 1.2em;
+      color: #333;
+    }
+
+    .header-section .empty-div {
+      width: 1.5em;
+      flex-shrink: 0;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 20px;
+      background-color: #f8f8f8;
+      max-width: 420px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .profile-card {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+
+    .profile-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      border: 2px solid #55b77e;
+      cursor: pointer;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 1.1em;
+      color: #333;
+    }
+
+    .user-email {
+      font-size: 0.9em;
+      color: #777;
+    }
+
+    .wallet-balance-card {
+      background-color: #55b77e;
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+
+    .section-title {
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #333;
+      margin-top: 25px;
+      margin-bottom: 15px;
+    }
+
+    .settings-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 20px;
+      background-color: #fff;
+      border-radius: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+    }
+
+    .list-item-content {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 1em;
+      color: #333;
+    }
+
+    .list-icon {
+      font-size: 1.5em;
+      color: #55b77e;
+    }
+
+    .profile-icon { color: #005eff; }
+    .vehicle-icon { color: #4682B4; }
+    .completed-icon { color: #28a745; }
+    .cancelled-icon { color: #dc3545; }
+    .pending-icon { color: rgb(255, 184, 20); }
+    .reports-icon { color: #496517; }
+    .helpline-icon { color: #007bff; } /* Specific color for helpline */
+
+
+    .list-item-arrow {
+      font-size: 1.2em;
+      color: #999;
+    }
+
+    .logout-card {
+      background-color: #f76170;
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 1.1em;
+      margin-top: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Modal for Image Viewing (Existing) */
+    #imageModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+    }
+
+    #imageModal .modal-content {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      background-color: transparent; /* Ensure background is transparent for image */
+      padding: 0; /* No padding for image modal content */
+    }
+
+    #imageModal .modal-content img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 2em;
+      color: #fff;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      z-index: 101; /* Ensure close button is above image */
+    }
+
+    .close-modal:hover {
+      color: #ddd;
+    }
+
+    /* NEW Helpline Modal Styles */
+    #helplineNumbersModal {
+      display: none; /* Changed from flex to none */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .helpline-modal-content {
+      background-color: #fff;
+      padding: 20px; /* Consistent with the image */
+      border-radius: 10px; /* Consistent with the image */
+      width: 85%; /* Consistent with the image */
+      max-width: 350px; /* Consistent with the image */
+      text-align: left;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .helpline-modal-close-button {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .helpline-modal-close-button:hover,
+    .helpline-modal-close-button:focus {
+      color: #333;
+    }
+
+    .helpline-modal-title {
+        font-size: 1.1em;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    .helpline-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .helpline-list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .helpline-list-item:last-child {
+        border-bottom: none;
+    }
+
+    .helpline-number-text {
+        font-size: 1em;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .helpline-call-icon a {
+        color: #55b77e;
+        font-size: 1.3em;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background-color: rgba(85, 183, 126, 0.1);
+    }
+
+    .helpline-call-icon a:hover {
+        background-color: rgba(85, 183, 126, 0.2);
+    }
+
+    .nav-bar {
+      background-color: #55b77e;
+      padding: 8px 0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      z-index: 10;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: rgba(0, 0, 0, 0.6);
+      font-size: 0.8em;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .nav-item.active {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .nav-item .icon {
+      font-size: 1.8em;
+      margin-bottom: 5px;
+    }
+
+    @media (min-width: 768px) {
+      .header-section,
+      .main-content {
+        padding-left: 40px;
+        padding-right: 40px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header-section,
+      .main-content {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header-section">
+    <a href="{% url 'mobileapp' %}" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+    <div class="setting-title">
+      Settings <span class="icon"><i class="fas fa-cog"></i></span>
+    </div>
+    <div class="empty-div"></div>
+  </div>
+
+  <div class="main-content">
+    <div class="profile-card">
+      <div class="profile-info">
+        <div class="avatar" onclick="openModal('{{ driver.profile_picture.url }}')">
+          <img src="{{ driver.profile_picture.url }}" alt="Profile" style="width: 60px; height: 60px; border-radius: 50%;">
+        </div>
+        <div>
+          <div class="user-name">{{ driver.driverfirstname }} {{ driver.driverlastname }}</div>
+          <h4><div class="user-email">{{ driver.driveraddress }}</div></h4>
+        </div>
+      </div>
+      <div class="wallet-balance-card">
+        <span>Wallet Balance</span>
+        <span>₹{{ today_total_earnings|default:"0" }}</span>
+      </div>
+    </div>
+
+    <h2 class="section-title">General</h2>
+    <ul class="settings-list">
+      <a href="{% url 'driver_profile' %}" class="list-item">
+        <div class="list-item-content">
+          <span class="list-icon profile-icon"><i class="fas fa-user-circle"></i></span>
+          <span>Profile</span>
+        </div>
+        <span class="list-item-arrow"><i class="fas fa-chevron-right"></i></span>
+      </a>
+
+      <a href="{% url 'vehicle_details' %}" class="list-item">
+        <div class="list-item-content">
+          <span class="list-icon vehicle-icon"><i class="fas fa-car-alt"></i></span>
+          <span>Vehicle details</span>
+        </div>
+        <span class="list-item-arrow"><i class="fas fa-chevron-right"></i></span>
+      </a>
+
+      <a href="{% url 'completedtrips' %}" class="list-item">
+        <div class="list-item-content">
+          <span class="list-icon completed-icon"><i class="fas fa-check-circle"></i></span>
+          <span>Completed trips</span>
+        </div>
+        <span class="list-item-arrow"><i class="fas fa-chevron-right"></i></span>
+      </a>
+
+      <a href="{% url 'cancelledtrips' %}" class="list-item">
+        <div class="list-item-content">
+          <span class="list-icon cancelled-icon"><i class="fas fa-times-circle"></i></span>
+          <span>Cancelled trips</span>
+        </div>
+        <span class="list-item-arrow"><i class="fas fa-chevron-right"></i></span>
+      </a>
+
+      <a href="{% url 'pendingtrips' %}" class="list-item">
+        <div class="list-item-content">
+          <span class="list-icon pending-icon"><i class="fas fa-hourglass-half"></i></span>
+          <span>Pending trips</span>
+        </div>
+        <span class="list-item-arrow"><i class="fas fa-chevron-right"></i></span>
+      </a>
+
+      <a href="{% url 'report' %}" class="list-item">
+        <div class="list-item-content">
+          <span class="list-icon reports-icon"><i class="fas fa-chart-bar"></i></span>
+          <span>Reports</span>
+        </div>
+        <span class="list-item-arrow"><i class="fas fa-chevron-right"></i></span>
+      </a>
+    </ul>
+
+    <h2 class="section-title">Support</h2> {# NEW SECTION TITLE #}
+    <ul class="settings-list" id="helplineList"> {# NEW LIST FOR HELPLINE #}
+      <li class="list-item" id="helplineItem">
+        <div class="list-item-content">
+          <span class="list-icon helpline-icon"><i class="fas fa-headset"></i></span>
+          <span>Helpline</span>
+        </div>
+        <span class="list-item-arrow"><i class="fas fa-chevron-right"></i></span>
+      </li>
+    </ul>
+
+    <div class="logout-card" onclick="window.location.href='{% url 'driver_logout' %}'">
+      <span class="logout-text">Logout</span>
+      <span class="list-item-arrow"><i class="fas fa-chevron-right" style="color: white;"></i></span>
+    </div>
+  </div>
+
+  <div id="imageModal" class="modal">
+    <span class="close-modal" onclick="closeModal()">×</span>
+    <div class="modal-content">
+      <img id="modalImage" src="" alt="Full Size Image">
+    </div>
+  </div>
+
+  <div id="helplineNumbersModal" class="modal">
+    <div class="helpline-modal-content">
+      <span class="helpline-modal-close-button">&times;</span>
+      <div class="helpline-modal-title">Helpline Numbers</div>
+      <ul class="helpline-list" id="helplineNumbersList">
+        </ul>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <a href="{% url 'mobileapp' %}" class="nav-item">
+      <span class="icon"><i class="fas fa-home"></i></span>
+      <span><b>Home</b></span>
+    </a>
+    <a href="{% url 'notifications' %}" class="nav-item">
+      <span class="icon"><i class="fas fa-bell"></i></span>
+      <span><b>Alerts</b></span>
+    </a>
+    <a href="{% url 'alltrips' %}" class="nav-item">
+      <span class="icon"><i class="fas fa-map-marked-alt"></i></span>
+      <span><b>Trips</b></span>
+    </a>
+    <a href="{% url 'settings' %}" class="nav-item active">
+      <span class="icon"><i class="fas fa-cog"></i></span>
+      <span><b>Settings</b></span>
+    </a>
+  </div>
+
+  <script>
+    // Existing Image Modal Functions
+    function openModal(imageSrc) {
+      const modal = document.getElementById('imageModal');
+      const modalImg = document.getElementById('modalImage');
+      modal.style.display = 'flex';
+      modalImg.src = imageSrc;
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('imageModal');
+      modal.style.display = 'none';
+      // Only restore scrolling if no other modals are open
+      if (helplineNumbersModal.style.display === 'none') {
+        document.body.style.overflow = 'auto'; // Restore scrolling
+      }
+    }
+
+    // Close image modal when clicking outside the image
+    document.getElementById('imageModal').addEventListener('click', function(event) {
+      if (event.target === this) {
+        closeModal();
+      }
+    });
+
+    // NEW Helpline Modal Logic
+    var helplineItem = document.getElementById("helplineItem");
+    var helplineNumbersModal = document.getElementById("helplineNumbersModal");
+    var helplineNumbersCloseBtn = helplineNumbersModal.querySelector(".helpline-modal-close-button");
+    var helplineNumbersList = document.getElementById("helplineNumbersList");
+
+    // Define your helpline numbers
+    // You can fetch these dynamically from Django if needed, e.g., using a JSON endpoint
+    var helplineNumbers = [
+      "7798025025"
+      // Add more numbers as needed
+    ];
+
+    // Function to populate the helpline numbers in the modal
+    function populateHelplineNumbers() {
+      helplineNumbersList.innerHTML = ''; // Clear existing content
+      helplineNumbers.forEach(function(number) {
+        var listItem = document.createElement('li');
+        listItem.classList.add('helpline-list-item');
+        listItem.innerHTML = `
+          <span class="helpline-number-text">${number}</span>
+          <span class="helpline-call-icon">
+            <a href="tel:${number}"><i class="fas fa-phone"></i></a>
+          </span>
+        `;
+        helplineNumbersList.appendChild(listItem);
+      });
+    }
+
+    // When the "Helpline" list item is clicked, open the new modal and populate numbers
+    helplineItem.onclick = function() {
+      populateHelplineNumbers(); // Populate numbers before showing the modal
+      helplineNumbersModal.style.display = "flex"; // Use flex to center content
+      document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+    }
+
+    // When the helpline modal's close button is clicked, close the modal
+    helplineNumbersCloseBtn.onclick = function() {
+      helplineNumbersModal.style.display = "none";
+      // Only restore scrolling if no other modals are open
+      if (imageModal.style.display === 'none') {
+        document.body.style.overflow = 'auto'; // Restore scrolling
+      }
+    }
+
+    // When the user clicks anywhere outside of the helpline modal, close it
+    window.addEventListener('click', function(event) {
+      if (event.target == helplineNumbersModal) {
+        helplineNumbersModal.style.display = "none";
+        // Only restore scrolling if no other modals are open
+        if (imageModal.style.display === 'none') {
+          document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+      }
+    });
+  </script>
+</body>
+</html>

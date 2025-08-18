@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Add Employee{% endblock title %}
+
+{% block content %}
+<script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8K8LRL9aOacWYYxIQn1YyeaJQVRzJqvM&callback=initMap&libraries=places"
+    async defer></script>
+
+<div class="container-fluid page-body-wrapper">
+    {% include "sidebar.html" %}
+    <div class="main-panel">
+        <div class="content-wrapper">
+            <div class="row">
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="employee-grid-form">
+                                <div class="form-title">Add Employee</div>
+                                <form action="{% url 'add_employee' %}" method="post" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="box-body">
+
+                                        <!-- Select Node -->
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="empNodeID">Select Node</label>
+                                                <select id="empNodeID" name="empNodeID" class="form-control" required>
+                                                    <option value="" selected disabled>Select Node</option>
+                                                    {% for node in nodes %}
+                                                    <option value="{{ node.nodeID }}">{{ node.nodeCity }} - {{ node.nodeState }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="form-group"></div>
+                                            <div class="form-group"></div>
+                                        </div>
+
+                                        <!-- Name, Email, Mobile -->
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="employeeName">Employee Name</label>
+                                                <input type="text" class="form-control" id="employeeName" name="employeeName"
+                                                    placeholder="Enter full name" pattern="^[A-Za-z\s]{3,50}$" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="employeeEmail">Email</label>
+                                                <input type="email" class="form-control" id="employeeEmail" name="employeeEmail"
+                                                    placeholder="Enter email" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="employeeMobile">Mobile</label>
+                                                <input type="tel" class="form-control" id="employeeMobile" name="employeeMobile"
+                                                    placeholder="Enter 10-digit mobile number" pattern="^[6-9][0-9]{9}$" required>
+                                            </div>
+                                        </div>
+
+                                        <!-- Role, Address, Password -->
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="employeeRole">Role</label>
+                                                <input type="text" class="form-control" id="employeeRole" name="employeeRole"
+                                                    placeholder="Enter job role" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="employeeAddress">Address</label>
+                                                <input type="text" class="form-control" id="employeeAddress" name="employeeAddress"
+                                                    placeholder="Enter address" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="password">Set Password</label>
+                                                <input type="password" class="form-control" id="password" name="password"
+                                                    placeholder="Enter Strong Password"
+                                                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                                                    title="Must contain at least one number, one uppercase and one lowercase letter, and at least 8 or more characters"
+                                                    required>
+                                            </div>
+                                        </div>
+
+                                        <!-- Salary, Joining Date, Aadhar -->
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="empSalary">Salary (Monthly)</label>
+                                                <input type="number" class="form-control" id="empSalary" name="empSalary"
+                                                    placeholder="Enter Salary in Rupees" min="0" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="empJoiningDate">Joining Date</label>
+                                                <input type="date" class="form-control" id="empJoiningDate" name="empJoiningDate"
+                                                    required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="employeeAadhar">Aadhar Number</label>
+                                                <input type="text" class="form-control" id="employeeAadhar" name="employeeAadhar"
+                                                    placeholder="Enter 12-digit Aadhar number" pattern="^[0-9]{12}$" required>
+                                            </div>
+                                        </div>
+
+                                        <!-- Submit -->
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                            </div>
+                                            <div class="form-group"></div>
+                                            <div class="form-group"></div>
+                                        </div>
+
+                                    </div>
+                                </form>
+                            </div> <!-- .employee-grid-form -->
+                        </div> <!-- .card-body -->
+                    </div> <!-- .card -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New CSS for grid layout -->
+<style>
+.employee-grid-form {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.employee-grid-form .form-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.employee-grid-form .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 1.5rem;
+}
+
+.employee-grid-form .form-group {
+    flex: 1 1 calc(33.333% - 13.34px);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.employee-grid-form .form-group label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 5px;
+}
+
+.employee-grid-form .form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
+    width: 100%;
+}
+
+.employee-grid-form .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+}
+
+.employee-grid-form .btn-primary {
+    background-color: #007bff;
+    border: none;
+    padding: 10px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    align-self: flex-start;
+}
+
+.employee-grid-form .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+@media (max-width: 992px) {
+    .employee-grid-form .form-group {
+        flex: 1 1 48%;
+    }
+}
+
+@media (max-width: 768px) {
+    .employee-grid-form .form-group {
+        flex: 1 1 100%;
+    }
+}
+</style>
+
+<!-- Inline Validation Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
+    const fields = [
+        'empNodeID', 'employeeName', 'employeeEmail', 'employeeMobile',
+        'employeeRole', 'employeeAddress', 'password', 'empSalary',
+        'empJoiningDate', 'employeeAadhar'
+    ];
+
+    fields.forEach(function (id) {
+        const input = document.getElementById(id);
+        const parent = input.parentElement;
+
+        const errorMsg = document.createElement('small');
+        errorMsg.className = 'form-text text-danger';
+        errorMsg.style.display = 'none';
+        parent.appendChild(errorMsg);
+
+        input.addEventListener('input', function () {
+            validateField(input, errorMsg);
+        });
+    });
+
+    form.addEventListener('submit', function (e) {
+        let valid = true;
+        fields.forEach(function (id) {
+            const input = document.getElementById(id);
+            const parent = input.parentElement;
+            const errorMsg = parent.querySelector('small');
+            if (!validateField(input, errorMsg)) {
+                valid = false;
+            }
+        });
+        if (!valid) e.preventDefault();
+    });
+
+    function validateField(input, errorMsg) {
+        const value = input.value.trim();
+        const name = input.name;
+        let message = '';
+
+        switch (name) {
+            case 'empNodeID':
+                if (!value) message = 'Please select a node.';
+                break;
+            case 'employeeName':
+                if (!/^[A-Za-z\s]{3,50}$/.test(value)) message = 'Name must be 3-50 alphabetic characters.';
+                break;
+            case 'employeeEmail':
+                if (!/^\S+@\S+\.\S+$/.test(value)) message = 'Enter a valid email address.';
+                break;
+            case 'employeeMobile':
+                if (!/^[6-9][0-9]{9}$/.test(value)) message = 'Mobile must start with 6-9 and be 10 digits.';
+                break;
+            case 'employeeRole':
+                if (!value) message = 'Role is required.';
+                break;
+            case 'employeeAddress':
+                if (!value) message = 'Address is required.';
+                break;
+            case 'password':
+                if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/.test(value)) {
+                    message = 'Password must be 8+ chars, uppercase, lowercase, number.';
+                }
+                break;
+            case 'empSalary':
+                if (!/^\d+$/.test(value) || parseInt(value) < 0) message = 'Salary must be a positive number.';
+                break;
+            case 'empJoiningDate':
+                if (!value) message = 'Joining date is required.';
+                break;
+            case 'employeeAadhar':
+                if (!/^\d{12}$/.test(value)) message = 'Aadhar must be exactly 12 digits.';
+                break;
+        }
+
+        if (message) {
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            input.classList.add('is-invalid');
+            return false;
+        } else {
+            errorMsg.textContent = '';
+            errorMsg.style.display = 'none';
+            input.classList.remove('is-invalid');
+            return true;
+        }
+    }
+});
+</script>
+{% endblock content %}

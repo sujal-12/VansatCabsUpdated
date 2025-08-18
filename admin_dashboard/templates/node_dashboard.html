@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ node.nodeCity }} Dashboard{% endblock title %}
+
+{% block content %}
+<div class="container-fluid page-body-wrapper">
+    {% include "sidebar.html" %}
+    <div class="main-panel">
+        <div class="content-wrapper">
+            <div class="row col-lg-12 col-md-12 col-sm-12">
+                <!-- STATUS CARDS ROW -->
+                <div class="col-md-8">
+                    <div class="row col-lg-12 col-md-12 col-sm-12">
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <!-- Live Trips -->
+                            <a href="{% url 'trip_list' node.nodeID 'Ongoing' %}" style="text-decoration: none;">
+                                <div class="card card-tale">
+                                    <div class="card-body text-center">
+                                        <p class="mb-2">Live Trips</p>
+                                        <p class="fs-30 mb-2">{{ live_trips_count }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <!-- Pending Trips -->
+                            <a href="{% url 'trip_list' node.nodeID 'Pending' %}" style="text-decoration: none;">
+                                <div class="card card-light-danger">
+                                    <div class="card-body text-center">
+                                        <p class="mb-2">Pending Trips</p>
+                                        <p class="fs-30 mb-2">{{ pending_trips_count }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <!-- Completed Trips -->
+                            <a href="{% url 'trip_list' node.nodeID 'Completed' %}" style="text-decoration: none;">
+                                <div class="card card-light-blue">
+                                    <div class="card-body text-center">
+                                        <p class="mb-2">Completed Trips</p>
+                                        <p class="fs-30 mb-2">{{ completed_trips_count }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-12">
+                            <!-- Cancelled Trips -->
+                            <a href="{% url 'trip_list' node.nodeID 'Cancelled' %}" style="text-decoration: none;">
+                                <div class="card card-light-danger">
+                                    <div class="card-body text-center">
+                                        <p class="mb-2">Cancelled Trips</p>
+                                        <p class="fs-30 mb-2">{{ cancelled_trips_count }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card mt-2">
+                        <div class="card-body">
+                            <!-- Title -->
+                            <h5 class="card-title text-dark mb-1">Trip Details</h5>
+                            <hr class="bg-dark mt-0 mb-3">
+
+                            <!-- Dynamic Sections -->
+                            
+                            <div id="tripDetailsSection" class="container mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4" id="receiptSection">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row col-lg-12 justify-content-around flex-wrap">
+                                <h4 class="text-center text-primary fw-bold mb-2">Generate Trip</h4>
+                                <div class="col-lg-4 col-md-4 col-sm-4">
+                                    <button class="btn btn-outline-primary square-button text-center m-2"
+                                        id="liveTripBtn">
+                                        <i class="mdi mdi-car-connected"></i>
+                                        <span class="fw-bold">Live Trip</span>
+                                    </button>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4">
+                                    <button class="btn btn-outline-primary square-button text-center m-2"
+                                        id="futureTripBtn">
+                                        <i class="mdi mdi-calendar-clock"></i>
+                                        <span class="fw-bold">Future Trip</span>
+                                    </button>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4">
+                                    <a href="{% url 'node_dashboard' node %}"
+                                        class="btn btn-outline-danger square-button text-center m-2">
+                                        <i class="mdi mdi-refresh"></i>
+                                        <span class="fw-bold">Reset</span>
+                                    </a>
+                                </div>
+                                
+                            </div>
+                            <hr class="bg-dark mt-0 mb-3">
+                            <div class="row col-lg-12 m-2" id="tripTypeSection" style="display: none;"></div>
+                            <div class="row col-lg-12 m-2" id="stepOneSection" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Razorpay User Info Modal -->
+<div class="modal fade" id="razorpayUserModal" tabindex="-1" aria-labelledby="razorpayUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="razorpayUserModalLabel">Enter Customer Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="container-fluid">
+          <div class="row">
+            <!-- Customer Name -->
+            <div class="col-md-6 mb-3">
+              <label for="rzp-name" class="form-label fw-bold">Customer Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="rzp-name" placeholder="Enter your name" required>
+            </div>
+
+            <!-- Contact Number -->
+            <div class="col-md-6 mb-3">
+              <label for="rzp-contact" class="form-label fw-bold">Contact Number <span class="text-danger">*</span></label>
+              <input type="tel" class="form-control" id="rzp-contact" placeholder="9876543210" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <!-- Email -->
+            <div class="col-md-6 mb-3">
+              <label for="rzp-email" class="form-label fw-bold">Email</label>
+              <input type="email" class="form-control" id="rzp-email" placeholder="example@domain.com">
+            </div>
+
+            <!-- GST Toggle -->
+            <div class="col-md-6 mb-3 d-flex align-items-end">
+              <div>
+                <label for="gstToggle" class="form-label fw-bold d-block">Need GST Bill?</label>
+                <div class="form-check p-0">
+                  <div class="form-switch fs-4">
+                    <input class="form-check-input" type="checkbox" id="gstToggle" onchange="toggleGSTFields()" style="width: 3em; height: 1.5em;">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GST Fields Section -->
+          <div id="gstDetailsSection" style="display: none;">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="gstNumber" class="form-label">GST Number <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="gstNumber" placeholder="22AAAAA0000A1Z5">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="companyName" class="form-label">Company Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="companyName" placeholder="Your Company Name">
+              </div>
+              <div class="col-md-12 mb-3">
+                <label for="companyAddress" class="form-label">Company Address <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="companyAddress" rows="2" placeholder="Company full address"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer: Button Row -->
+      <div class="modal-footer justify-content-end gap-2">
+        <button class="btn btn-outline-secondary fw-bold d-flex align-items-center gap-2" data-bs-dismiss="modal">
+          <i class="mdi mdi-close-circle-outline fs-5"></i> Cancel
+        </button>
+        <button onclick="startRazorpayPayment()" id="payNowBtn"
+                class="btn btn-primary fw-bold d-flex align-items-center gap-2">
+          <i class="mdi mdi-credit-card-outline fs-5"></i> Pay ₹<span id="payAmountPreview">0.00</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Payment Success Modal -->
+<div class="modal fade" id="paymentSuccessModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered text-center">
+    <div class="modal-content p-4">
+      <div class="modal-body">
+        <img src="{% static 'images/samples/1280x768/success.gif' %}" alt="Success GIF" class="img-fluid mb-3" style="max-height: 200px;">
+        <h4 class="text-success fw-bold">Payment Successful!</h4>
+        <p class="text-muted">Thank you for your payment. Your trip is confirmed.</p>
+        <button class="btn btn-success mt-3 px-4" onclick="closePaymentModal()">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="driverSelectionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Select Driver</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="driverListContainer">Loading drivers...</div>
+        <div id="driverTripDetails" class="mt-3"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="assignDriverBtn" class="btn btn-primary" disabled>Assign Driver</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Trip Summary Modal -->
+<div class="modal fade" id="tripSummaryModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content p-4">
+      <div class="modal-body">
+        <div class="row align-items-start">
+
+          <!-- Left: Trip + Customer Info -->
+          <div class="col-md-6 border-end pe-4">
+            <h5 class="fw-bold text-primary mb-3">Trip Summary</h5>
+            <ul class="list-unstyled mb-3">
+              <li><strong>Pickup:</strong> <span id="summaryPickup">---</span></li>
+              <li><strong>Drop:</strong> <span id="summaryDrop">---</span></li>
+              <li><strong>Vehicle:</strong> <span id="summaryVehicle">---</span></li>
+              <li><strong>KM Range:</strong> <span id="summaryKM">---</span></li>
+              <li><strong>Trip ID:</strong> <span id="summaryTripId">TRIP123456</span></li>
+            </ul>
+
+            <h6 class="fw-bold text-secondary">Customer Details</h6>
+            <ul class="list-unstyled mb-3">
+              <li><strong>Name:</strong> <span id="summaryCustomerName">---</span></li>
+              <li><strong>Email:</strong> <span id="summaryCustomerEmail">---</span></li>
+              <li><strong>Contact:</strong> <span id="summaryCustomerContact">---</span></li>
+            </ul>
+
+            <h6 class="fw-bold text-success mt-4">Final Total</h6>
+            <h3 class="fw-bold text-dark">₹ <span id="summaryAmount">--</span></h3>
+          </div>
+
+          <!-- Right: Driver Selection -->
+          <div class="col-md-6">
+            <h5 class="fw-bold text-primary mb-2">Select Driver</h5>
+            <div class="position-relative">
+                <input type="text" id="driverSearchInput" class="form-control"
+                      placeholder="Search driver by name or vehicle number"
+                      oninput="searchDrivers()" />
+
+                <!-- ❌ Clear button -->
+                <i class="mdi mdi-close-circle-outline text-danger position-absolute"
+                  onclick="clearDriverSelection()"
+                  style="top: 8px; right: 12px; font-size: 22px; cursor: pointer;"
+                  title="Clear Driver"></i>
+              </div>
+            <div id="driverSuggestions" class="mt-3"></div>
+
+            <div class="mt-3">
+              <button id="saveTripBtn" class="btn btn-success w-100" style="display: none;" onclick="finalizeTripWithDriver()">
+                Save the Trip
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Final Trip Receipt Modal -->
+<div class="modal fade" id="tripReceiptModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content p-4" id="tripReceiptContent">
+      <div class="modal-header">
+        <h5 class="modal-title">Trip Receipt</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                onclick="reloadDashboard()"></button>
+      </div>
+      <div class="modal-body">
+        <div id="tripReceiptBody">
+          <!-- Content gets filled dynamically -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-primary" onclick="printTripReceipt()">🖨️ Print</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal" onclick="reloadDashboard()">❌ Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="tripResetModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger fw-bold">Start New Trip?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Your current trip data will be lost. Do you want to start a new trip?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmTripReset()">Yes, Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  const razorpayModal = document.getElementById('razorpayUserModal');
+  razorpayModal.addEventListener('show.bs.modal', function () {
+    const amountText = document.getElementById("totalAmountDisplay").textContent.replace(/[^\d.]/g, '');
+    document.getElementById("payAmountPreview").textContent = parseFloat(amountText).toFixed(2);
+  });
+</script>
+{% endblock content %}

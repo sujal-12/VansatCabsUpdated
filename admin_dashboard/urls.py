@@ -1,0 +1,63 @@
+from django.contrib import admin
+from django.urls import path
+from admin_dashboard import views
+
+
+urlpatterns = [
+    path("", views.index, name= "home"),
+    path("sign_in", views.sign_in, name= "sign_in"),
+    path("admin_dashboard", views.admin_dashboard, name= "admin_dashboard"),
+    path("sign_out", views.sign_out, name= "sign_out"),
+    path("add_node", views.add_node, name= "add_node"),
+    path('edit_node/', views.edit_node, name='edit_node'),
+    path('delete_node/<str:node_id>', views.delete_node, name='delete_node'),
+    path('node_dashboard/<str:node_id>', views.node_dashboard, name='node_dashboard'),
+    path('node_tariff/<str:node_id>', views.node_tariff, name='node_tariff'),
+    path('delete_airport_tariff/<str:node_id>/<str:airport_tariff_id>', views.delete_airport_tariff, name='delete_airport_tariff'),
+    path('delete_railway_tariff/<str:node_id>/<str:railway_tariff_id>', views.delete_railway_tariff, name='delete_railway_tariff'),
+    path('delete_outstation_tariff/<str:node_id>/<str:outstation_tariff_id>', views.delete_outstation_tariff, name='delete_outstation_tariff'),
+    path('delete_holiday_tariff/<str:node_id>/<str:holiday_tariff_id>', views.delete_holiday_tariff, name='delete_holiday_tariff'),
+    path('delete_hr_tariff/<str:node_id>/<str:hr_tariff_id>', views.delete_hr_tariff, name='delete_hr_tariff'),
+    path('node_driver/<str:node_id>', views.node_driver, name='node_driver'),
+    path('drivers/report/<int:driver_id>', views.download_driver_report, name='download_driver_report'),
+    path('approve_driver/<int:driver_id>/', views.approve_driver, name='approve_driver'),
+    path('reject_driver/<int:driver_id>/', views.reject_driver, name='reject_driver'),
+    path('driver/view/<str:node_id>/<int:driver_id>/', views.view_driver, name='view_driver'),
+    path('driver/edit/<int:driver_id>/', views.edit_driver, name='edit_driver'),
+    path('add_driver/<int:node_id>/', views.add_driver, name='add_driver'),
+    path('get-km-ranges/<int:node_id>/', views.get_km_ranges, name='get_km_ranges'),
+    path('fetch_kmrange/<int:node_id>/', views.fetch_kmrange, name='fetch_kmrange'),
+    path('api/outstation/km-ranges/', views.get_outstation_km_ranges, name='outstation_km_ranges'),
+    path('delete_driver/<str:node_id>/<str:driver_id>/', views.delete_driver, name='delete_driver'),
+    path('fetch-vehicle-types/<int:node_id>/', views.fetch_vehicle_types, name='fetch_vehicle_types'),
+    path('fetch-active-drivers/', views.fetch_active_drivers, name='fetch_active_drivers'),
+    path('fetch_airport_charges/<int:node_id>/', views.fetch_airport_charges, name='fetch_airport_charges'),
+    path('fetch_outstation_charges/<int:node_id>/', views.fetch_outstation_charges, name='fetch_outstation_charges'),
+    path("employee", views.employee, name= "employee"),
+    path("add_employee", views.add_employee, name= "add_employee"),
+    path('delete-employee/<int:emp_id>/', views.delete_employee, name='delete_employee'),
+    path('employee/edit/', views.edit_employee, name='edit_employee'),
+    path('update-availability/', views.update_availability, name='update_availability'),
+    path('save-trip/', views.save_trip_after_payment, name='save_trip'),
+    path('update-driver/', views.update_trip_driver, name='update_trip_driver'),
+    # path('verify-otp/<str:trip_id>/', views.verify_trip_otp, name='verify_trip_otp'),
+    path('trips', views.trips, name='trips'),
+    path('trips/edit/<int:trip_id>/', views.edit_trip, name='edit_trip'),
+    path('extra_charges/<str:node_id>/', views.fetch_extra_charges, name='fetch_extra_charges'),
+    path("cancel-trip/<int:trip_id>/", views.cancel_trip, name="cancel_trip"),
+    path('fetch_holidaytour_packages/<int:node_id>/', views.fetch_holidaytour_packages, name='fetch_holidaytour_packages'),
+    path('fetch_holidaytour_charges/<int:node_id>/', views.fetch_holidaytour_charges),
+    path('fetch_hourly_options/<int:node_id>/', views.fetch_hourly_options),
+    path('fetch_hourly_charges/<int:node_id>/', views.fetch_hourly_charges),
+    path('driver/edit/<str:node_id>/<int:driver_id>/', views.edit_driver, name='edit_driver'),
+    path("generate_booking_id/", views.generate_booking_id, name="generate_booking_id"),
+    path("fetch_railway_transfer_packages/<int:node_id>/", views.fetch_railway_transfer_packages, name="fetch_railway_transfer_packages"),
+    path("fetch_railway_charges/<int:node_id>/", views.fetch_railway_charges, name="fetch_railway_charges"),
+    path('node_dashboard/<str:node_id>/trips/<str:status>/', views.trip_list_view, name='trip_list'),
+    path('trips-by-status/', views.trips_by_status_view, name='trips_by_status'),
+
+
+    # Fetch Details New
+    path('get-tariff-details/<int:node_id>/<str:km_range>/<str:vehicle_type>/', views.get_tariff_details),
+
+] 

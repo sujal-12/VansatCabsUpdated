@@ -1,0 +1,276 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Global Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', 'Arial', sans-serif;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #333;
+      overflow: hidden;
+    }
+
+    .page-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      max-width: 420px;
+      width: 100%;
+      margin: 0 auto;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .top-logo-section {
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #55b77e;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      flex-shrink: 0;
+    }
+
+    .top-logo-section .back-button-otp {
+      font-size: 2.3em;
+      cursor: pointer;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .top-logo-section .app-logo {
+      width: 100px;
+      height: auto;
+    }
+
+    .building-graphic-section {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 0 20px;
+      position: relative;
+      z-index: 1;
+      background-image: url('{% static "images/vecteezy_modern-city-skyline-vector-illustration_14440267.jpg" %}');
+      background-size: cover;
+      background-position: center bottom;
+      background-repeat: no-repeat;
+      min-height: 200px;
+    }
+
+    .otp-card-section {
+      background-color: #fff;
+      padding: 25px 20px 30px;
+      border-top-left-radius: 30px;
+      border-top-right-radius: 30px;
+      box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
+      margin-top: -30px;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    .divider-line {
+      width: 50px;
+      height: 4px;
+      background-color: #ddd;
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    .otp-card-section h2 {
+      font-size: 1.3em;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .otp-card-section p {
+      font-size: 0.85em;
+      color: #777;
+      margin-bottom: 25px;
+    }
+
+    .otp-input-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: nowrap;
+    }
+
+    .otp-input-container input {
+      width: 50px;
+      height: 50px;
+      text-align: center;
+      font-size: 1.6em;
+      font-weight: 600;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background-color: #f8f8f8;
+      color: #333;
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .otp-input-container input:focus {
+      border-color: #28a745;
+      box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+    }
+
+    .verify-button {
+      width: 100%;
+      padding: 18px;
+      background-color: #55b77e;
+      color: black;
+      border: none;
+      border-radius: 10px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .verify-button:hover {
+      background-color: #4da674;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .message {
+      font-size: 0.85em;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    @media (max-width: 375px) {
+      .top-logo-section {
+        padding: 10px 15px;
+      }
+      .app-logo {
+        width: 90px;
+      }
+      .back-button-otp {
+        font-size: 1.8em;
+      }
+      .building-graphic-section {
+        min-height: 150px;
+      }
+      .otp-card-section {
+        padding: 20px 15px 25px;
+        margin-top: -25px;
+      }
+      .otp-card-section h2 {
+        font-size: 1.2em;
+      }
+      .otp-card-section p {
+        font-size: 0.8em;
+        margin-bottom: 20px;
+      }
+      .otp-input-container {
+        gap: 8px;
+      }
+      .otp-input-container input {
+        width: 45px;
+        height: 45px;
+        font-size: 1.4em;
+      }
+      .verify-button {
+        padding: 12px;
+        font-size: 0.95em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="top-logo-section">
+      <a href="{% url 'mobileapp' %}" class="back-button-otp">←</a>
+      <img src="{% static 'images/vansat_bg_logo_black.png' %}" alt="Taxido Logo" class="app-logo">
+    </div>
+
+    <div class="building-graphic-section"></div>
+
+    <div class="otp-card-section">
+      <div class="divider-line"></div>
+      <h2>OTP Verification </h2>
+      <p>Enter the 5-digit OTP sent to your registered mobile number</p>
+
+      {% if message %}
+        <div class="message {% if success %}success{% else %}error{% endif %}">
+          {{ message }}
+        </div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="otp-input-container">
+          <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" name="otp1" required>
+          <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" name="otp2" required>
+          <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" name="otp3" required>
+          <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" name="otp4" required>
+          <input type="text" maxlength="1" pattern="[0-9]" inputmode="numeric" name="otp5" required>
+        </div>
+        <button type="submit" class="verify-button">Verify</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const otpInputs = document.querySelectorAll('.otp-input-container input');
+
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/[^0-9]/g, '');
+        if (input.value.length === 1 && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && input.value.length === 0 && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+      });
+    });
+
+    otpInputs[0].addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasteData = e.clipboardData.getData('text').trim();
+      if (pasteData.length === otpInputs.length && /^\d+$/.test(pasteData)) {
+        for (let i = 0; i < otpInputs.length; i++) {
+          otpInputs[i].value = pasteData[i];
+        }
+        otpInputs[otpInputs.length - 1].focus();
+      }
+    });
+  </script>
+</body>
+</html>

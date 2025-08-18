@@ -1,0 +1,744 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Trip Records{% endblock title %}
+
+{% block content %}
+<style>
+  .form-switch .form-check-input {
+    margin-left: 7px;
+    width: 36px;
+    height: 18px;
+    background-color: #ddd;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .form-switch .form-check-input:checked {
+    background-color: #28a745;
+  }
+
+  .form-switch .form-check-input::before {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background-color: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+  }
+
+  .form-switch .form-check-input:checked::before {
+    transform: translateX(18px);
+  }
+
+  .form-switch .form-check-label {
+    font-weight: 500;
+    font-size: 13px;
+    margin-left: 8px;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  .form-check.form-switch {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  #tripSearch,
+  #statusFilter,
+  #tripTypeFilter {
+    width: 300px;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    margin-right: 10px;
+  }
+</style>
+<style>
+  .modal-body .row>div {
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  .modal-body strong {
+    display: inline-block;
+    width: 150px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .modal-body .section-header {
+    font-weight: 600;
+    font-size: 15px;
+    color: #007bff;
+    margin-top: 15px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 5px;
+  }
+
+  .modal-body {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 20px;
+  }
+
+  .modal-title {
+    font-weight: bold;
+    color: #333;
+  }
+
+  .modal-content {
+    border-radius: 8px;
+  }
+
+  .modal-footer .btn-secondary {
+    background-color: #6c757d;
+    border: none;
+  }
+</style>
+
+
+<div class="container-fluid page-body-wrapper">
+  {% include "sidebar.html" %}
+  <div class="main-panel">
+    <div class="content-wrapper">
+      <div class="row">
+        <div class="col-lg-12 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+
+              <!-- Header -->
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h3 class="card-title mb-2">Trip Records</h3>
+                  <p class="card-description mb-2">All trip records are shown here...</p>
+                </div>
+              </div>
+
+              <!-- Search and Filters -->
+              <div class="d-flex flex-wrap mb-3">
+                <input type="text" id="tripSearch" onkeyup="filterTrips()" placeholder="Search Trips..."
+                  class="form-control me-2 mb-2" style="max-width: 200px;">
+                <select id="statusFilter" onchange="filterTrips()" class="form-select me-2 mb-2"
+                  style="max-width: 180px;">
+                  <option value="">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Ongoing">Ongoing</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <select id="tripTypeFilter" onchange="filterTrips()" class="form-select mb-2" style="max-width: 200px;">
+                  <option value="">All Trip Types</option>
+                  <option value="at">Airport Transfer</option>
+                  <option value="rt">Railway Transfer</option>
+                  <option value="os">Outstation</option>
+                  <option value="hr">Hourly Rental</option>
+                  <option value="ht">Holiday Tour</option>
+                </select>
+              </div>
+
+              <!-- Trip Table -->
+              <div class="table-responsive">
+                <table class="table" id="tripTable">
+                  <thead>
+                    <tr>
+                      <th>Trip ID</th>
+                      <th>From</th>
+                      <th>To</th>
+                      <th>Customer Name</th>
+                      <th>Status</th>
+                      <th>Action</th> <!-- ✅ Added Action column -->
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for trip in trips %}
+                    <tr>
+                      <td>
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#tripModal{{ trip.id }}">
+                          {{ trip.booking_id }}
+                        </a>
+                      </td>
+                      <td>{{ trip.from_city }}</td>
+                      <td>{{ trip.to_city }}</td>
+                      <td>{{ trip.passenger_name }}</td>
+                      <td>
+                        <span class="badge 
+            {% if trip.status == 'Completed' %}bg-success
+            {% elif trip.status == 'Pending' %}bg-warning
+            {% elif trip.status == 'Ongoing' %}bg-info
+            {% else %}bg-secondary{% endif %}">
+                          {{ trip.status }}
+                        </span>
+
+                        {% if trip.status == "Pending" %}
+                        <button class="btn btn-sm btn-danger ms-2" onclick="confirmCancel('{{ trip.id }}')">
+                          Cancel
+                        </button>
+                        {% endif %}
+
+                        {% if trip.extra_charges and trip.extra_total %}
+                        <a href="#" class="badge bg-primary ms-2 text-decoration-none" data-bs-toggle="modal"
+                          data-bs-target="#extraChargesModal{{ trip.id }}">
+                          Extra Charges
+                        </a>
+                        {% endif %}
+                      </td>
+                      <td> <!-- ✅ New Action buttons -->
+                        <button class="btn btn-sm btn-outline-warning ms-2" data-bs-toggle="modal"
+                          data-bs-target="#editTripModal{{ trip.id }}">
+                          Edit
+                        </button>
+
+                        <button class="btn btn-sm btn-outline-primary" onclick="downloadInvoice('{{ trip.id }}')">
+                          Download Receipt
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="shareInvoice('{{ trip.id }}')">
+                          Share Invoice
+                        </button>
+                      </td>
+                    </tr>
+
+                    <!-- Edit Trip Modal -->
+                    <div class="modal fade" id="editTripModal{{ trip.id }}" tabindex="-1"
+                      aria-labelledby="editTripModalLabel{{ trip.id }}" aria-hidden="true">
+                      <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal-content">
+                          <form method="POST" action="{% url 'edit_trip' trip.id %}">
+
+                            {% csrf_token %}
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="editTripModalLabel{{ trip.id }}">Edit Trip - {{
+                                trip.booking_id }}</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                            </div>
+
+                            <div class="modal-body">
+                              <div class="row g-3">
+                                <!-- Passenger Info -->
+                                <div class="col-md-4">
+                                  <label class="form-label">Passenger Name</label>
+                                  <input type="text" class="form-control" name="passenger_name"
+                                    value="{{ trip.passenger_name }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Contact Number</label>
+                                  <input type="text" class="form-control" name="contact_number"
+                                    value="{{ trip.contact_number }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Email ID</label>
+                                  <input type="email" class="form-control" name="email_id" value="{{ trip.email_id }}">
+                                </div>
+
+                                <!-- Trip Info -->
+                                <div class="col-md-4">
+                                  <label class="form-label">From City</label>
+                                  <input type="text" class="form-control" name="from_city" value="{{ trip.from_city }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">To City</label>
+                                  <input type="text" class="form-control" name="to_city" value="{{ trip.to_city }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Booking ID</label>
+                                  <input type="text" class="form-control" name="booking_id"
+                                    value="{{ trip.booking_id }}" readonly>
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Date</label>
+                                  <input type="date" class="form-control" name="date"
+                                    value="{{ trip.date|date:'Y-m-d' }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Time</label>
+                                  <input type="time" class="form-control" name="time"
+                                    value="{{ trip.time|time:'H:i' }}">
+                                </div>
+
+                                <div class="col-md-4">
+                                  <label class="form-label">Status</label>
+                                  <select name="status" class="form-control">
+  <option value="Pending" {% if trip.status == "Pending" %}selected{% endif %}>Pending</option>
+  <option value="Ongoing" {% if trip.status == "Ongoing" %}selected{% endif %}>Ongoing</option>
+  <option value="Completed" {% if trip.status == "Completed" %}selected{% endif %}>Completed</option>
+  <option value="Cancelled" {% if trip.status == "Cancelled" %}selected{% endif %}>Cancelled</option>
+</select>
+
+                                </div>
+
+
+                                <!-- Vehicle Info -->
+                                <div class="col-md-4">
+                                  <label class="form-label">Vehicle Type</label>
+                                  <input type="text" class="form-control" name="vehicle_type"
+                                    value="{{ trip.vehicle_type }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Vehicle Number</label>
+                                  <input type="text" class="form-control" name="vehicle_number"
+                                    value="{{ trip.vehicle_number }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Driver Name</label>
+                                  <input type="text" class="form-control" name="driver_name"
+                                    value="{{ trip.driver_name }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Driver Contact</label>
+                                  <input type="text" class="form-control" name="driver_contact"
+                                    value="{{ trip.driver_contact }}">
+                                </div>
+
+                                <!-- Payment Info -->
+                                <div class="col-md-4">
+                                  <label class="form-label">Payment Type</label>
+                                  <input type="text" class="form-control" name="payment_type"
+                                    value="{{ trip.payment_type }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Base Fare</label>
+                                  <input type="number" step="0.01" class="form-control" name="base_fare"
+                                    value="{{ trip.base_fare }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Discount</label>
+                                  <input type="number" step="0.01" class="form-control" name="discount"
+                                    value="{{ trip.discount }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Terminal Charges</label>
+                                  <input type="number" step="0.01" class="form-control" name="terminal_charges"
+                                    value="{{ trip.terminal_charges }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Surcharges</label>
+                                  <input type="number" step="0.01" class="form-control" name="surcharges"
+                                    value="{{ trip.surcharges }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Taxes</label>
+                                  <input type="text" class="form-control" name="taxes" value="{{ trip.taxes }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">Total Amount</label>
+                                  <input type="number" step="0.01" class="form-control" name="total_amount"
+                                    value="{{ trip.total_amount }}">
+                                </div>
+
+                                <!-- OTP -->
+                                <div class="col-md-4">
+                                  <label class="form-label">OTP</label>
+                                  <input type="text" class="form-control" name="otp" value="{{ trip.otp }}">
+                                </div>
+                                <div class="col-md-4">
+                                  <label class="form-label">OTP Verified</label>
+                                  <select name="otp_verified" class="form-control">
+                                    <option value="True" {% if trip.otp_verified %}selected{% endif %}>Yes</option>
+                                    <option value="False" {% if not trip.otp_verified %}selected{% endif %}>No</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="modal-footer">
+                              <button type="submit" class="btn btn-success">Save Changes</button>
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Extra Charges Modal -->
+                    {% if trip.extra_charges and trip.extra_total %}
+                    <div class="modal fade" id="extraChargesModal{{ trip.id }}" tabindex="-1"
+                      aria-labelledby="extraChargesLabel{{ trip.id }}" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="extraChargesLabel{{ trip.id }}">
+                              Extra Charges for Trip {{ trip.booking_id }}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <ul class="list-group mb-3">
+                              {% for key, value in trip.extra_charges.items %}
+                              <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ key }}
+                                <span>₹{{ value }}</span>
+                              </li>
+                              {% endfor %}
+                            </ul>
+                            <div class="text-end fw-bold">Total Extra Charges: ₹{{ trip.extra_total }}</div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Trip Details Modal -->
+                    <div class="modal fade" id="tripModal{{ trip.id }}" tabindex="-1"
+                      aria-labelledby="tripModalLabel{{ trip.id }}" aria-hidden="true">
+                      <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="tripModalLabel{{ trip.id }}">
+                              Trip Details - {{ trip.booking_id }}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <div class="row">
+
+                              <!-- ✅ Booking ID for JavaScript -->
+                              <div class="col-md-6 booking-id"><strong>Booking ID:</strong> {{ trip.booking_id }}</div>
+
+                              <!-- Passenger Info -->
+                              <div class="section-header col-12">Passenger & Trip Info</div>
+                              <div class="col-md-6"><strong>Passenger Name:</strong> {{ trip.passenger_name }}</div>
+                              <div class="col-md-6"><strong>Contact Number:</strong> {{ trip.contact_number }}</div>
+
+                              <div class="col-md-6"><strong>From:</strong> {{ trip.from_city }}</div>
+                              <div class="col-md-6"><strong>To:</strong> {{ trip.to_city }}</div>
+                              <div class="col-md-6 trip-date"><strong>Trip Date:</strong> {{ trip.date }}</div>
+                              <div class="col-md-6"><strong>Trip Time:</strong> {{ trip.time }}</div>
+
+                              <!-- Vehicle Info -->
+                              <div class="section-header col-12">Vehicle & Driver Info</div>
+                              <div class="col-md-6"><strong>Vehicle Type:</strong> {{ trip.vehicle_type }}</div>
+                              <div class="col-md-6"><strong>Vehicle Number:</strong> {{ trip.vehicle_number }}</div>
+                              <div class="col-md-6"><strong>Driver Name:</strong> {{ trip.driver_name }}</div>
+                              <div class="col-md-6"><strong>Driver Contact:</strong> {{ trip.driver_contact }}</div>
+
+                              <!-- Payment Info -->
+                              <div class="section-header col-12">Payment Info</div>
+                              <div class="col-md-6"><strong>Payment Type:</strong> {{ trip.payment_type }}</div>
+                              <div class="col-md-6"><strong>Base Fare:</strong> ₹{{ trip.base_fare }}</div>
+                              <div class="col-md-6"><strong>Discount:</strong> ₹{{ trip.discount }}</div>
+                              <div class="col-md-6"><strong>Terminal Charges:</strong> ₹{{ trip.terminal_charges }}
+                              </div>
+                              <div class="col-md-6"><strong>Surcharges:</strong> ₹{{ trip.surcharges }}</div>
+                              <div class="col-md-6"><strong>Taxes:</strong> {{ trip.taxes }}</div>
+
+                              {% if trip.extra_charges %}
+                              <div class="col-12 mt-3"><strong>Extra Charges:</strong></div>
+                              <div class="col-12 ps-4">
+                                <ol class="mb-2">
+                                  {% for label, amount in trip.extra_charges.items %}
+                                  <li>{{ label }}: ₹{{ amount }}</li>
+                                  {% endfor %}
+                                </ol>
+                              </div>
+                              <div class="col-md-6"><strong>Total Extra Charges:</strong> ₹{{ trip.extra_total }}</div>
+                              {% endif %}
+
+                              <div class="col-md-6"><strong>Total Amount:</strong> ₹{{ trip.total_amount }}</div>
+
+                              <!-- Status Info -->
+                              <div class="section-header col-12">Status Info</div>
+                              <div class="col-md-6"><strong>Status:</strong> {{ trip.status }}</div>
+                              <div class="col-md-6"><strong>OTP :</strong> {{ trip.otp }}</div>
+                              <div class="col-md-6"><strong>OTP Verified:</strong> {{ trip.otp_verified }}</div>
+                              <div class="col-md-6"><strong>Created At:</strong> {{ trip.created_at }}</div>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {% empty %}
+                    <tr>
+                      <td colspan="6" class="text-center">No trip records found.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Filter JS -->
+<script>
+  function filterTrips() {
+    const keyword = document.getElementById("tripSearch").value.toLowerCase();
+    const status = document.getElementById("statusFilter").value.toLowerCase();
+    const tripType = document.getElementById("tripTypeFilter").value.toLowerCase();
+    const table = document.getElementById("tripTable");
+    const rows = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < rows.length; i++) {
+      const cells = rows[i].getElementsByTagName("td");
+      if (cells.length === 0) continue;
+
+      const bookingId = cells[0].innerText.toLowerCase();
+      const from = cells[1].innerText.toLowerCase();
+      const to = cells[2].innerText.toLowerCase();
+      const name = cells[3].innerText.toLowerCase();
+
+      const span = cells[4].querySelector("span");
+      const rowStatus = span ? span.innerText.trim().toLowerCase() : "";
+
+      const tripTypeMatch = tripType === "" || bookingId.startsWith(tripType);
+      const keywordMatch = bookingId.includes(keyword) || from.includes(keyword) || to.includes(keyword) || name.includes(keyword);
+      const statusMatch = status === "" || rowStatus === status;
+
+      rows[i].style.display = (keywordMatch && statusMatch && tripTypeMatch) ? "" : "none";
+    }
+  }
+</script>
+
+<!-- Cancel Trip -->
+<script>
+  function confirmCancel(tripId) {
+    if (confirm("Are you sure you want to cancel this trip?")) {
+      fetch(`/cancel-trip/${tripId}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie('csrftoken'),
+          "Content-Type": "application/json"
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert("Trip cancelled successfully.");
+            location.reload();
+          } else {
+            alert("Error: " + data.error);
+          }
+        });
+    }
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
+
+<script>
+  function downloadInvoice(tripId) {
+    const modalContent = document.querySelector(`#tripModal${tripId} .modal-body`);
+    if (!modalContent) {
+      alert("Trip modal not found!");
+      return;
+    }
+
+    const tripTitle = document.querySelector(`#tripModalLabel${tripId}`)?.innerText || 'Trip Invoice';
+    const bookingIdEl = modalContent.querySelector('.booking-id');
+    const bookingId = bookingIdEl ? bookingIdEl.textContent.split(':')[1].trim() : null;
+    const formattedTripId = bookingId ? `Trip ID: ${bookingId}` : `Trip ID: UNKNOWN`;
+
+    const dateCreated = modalContent.querySelector(".trip-date")?.textContent.split(':')[1]?.trim() || new Date().toLocaleDateString();
+    const createdAt = new Date().toLocaleString();
+
+    const invoiceWindow = window.open('', '_blank');
+    if (!invoiceWindow) {
+      alert("Popup blocked! Please allow popups for this site.");
+      return;
+    }
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>${tripTitle}</title>
+        <style>
+          @media print {
+            body { margin: 0; }
+          }
+          body {
+            width: 72mm;
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            padding: 0;
+            margin: 0;
+            color: #000;
+          }
+          .container {
+            padding: 5px 10px;
+          }
+          .center { text-align: center; }
+          .bold { font-weight: bold; font-size: 14px; }
+          .section { margin-top: 10px; }
+          .section-title {
+            font-weight: bold;
+            border-bottom: 1px solid #000;
+            margin-bottom: 5px;
+            padding-bottom: 2px;
+          }
+          .two-col {
+            display: flex;
+            flex-wrap: wrap;
+          }
+          .field {
+            width: 50%;
+            padding: 2px 4px;
+            box-sizing: border-box;
+          }
+          .field strong {
+            display: inline-block;
+            width: 48%;
+          }
+          .hr {
+            border-top: 1px dashed #000;
+            margin: 8px 0;
+          }
+          .charges {
+            font-size: 12px;
+            margin-left: 15px;
+          }
+          .print-btn { text-align: center; margin-top: 10px; }
+          .total-line {
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+            padding: 5px 10px;
+            margin-right: 4mm;
+          }
+          @media print {
+            .print-btn { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="center bold">
+            <img src="static/images/icon.jpeg" alt="Logo" style="height: 40px;"><br>
+            Vansat Cabs Pvt. Ltd.
+          </div>
+          <div class="center" style="font-size: 11px;">
+            Nashik Airport, Ojhar<br>
+            Ph: 7262-025-025 / 7263-025-025<br>
+            www.vansatcabs.com
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="center bold">Trip Receipt</div>
+          <div style="font-size: 11px;">${formattedTripId} | TripDate: ${dateCreated}</div>
+
+          <div class="hr"></div>
+
+          ${generateTwoColSections(modalContent, createdAt)}
+
+          <div class="print-btn">
+            <button onclick="window.print()">Print</button>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    invoiceWindow.document.open();
+    invoiceWindow.document.write(htmlContent);
+    invoiceWindow.document.close();
+
+    invoiceWindow.onload = () => {
+      setTimeout(() => invoiceWindow.print(), 500);
+    };
+  }
+
+  function generateTwoColSections(content, createdAt) {
+    const container = document.createElement('div');
+    container.innerHTML = content.innerHTML;
+
+    const sections = {
+      'Passenger & Trip Info': [],
+      'Vehicle & Driver Info': [],
+      'Payment Info': [],
+      'Status Info': [],
+      'Extra Charges': []
+    };
+
+    const elements = container.querySelectorAll('div, ol');
+    let currentSection = null;
+
+    elements.forEach(el => {
+      const sectionHeader = el.classList.contains('section-header') ? el.textContent.trim() : null;
+      if (sectionHeader && sections.hasOwnProperty(sectionHeader)) {
+        currentSection = sectionHeader;
+      } else if (currentSection && el.classList.contains('col-md-6')) {
+        const keyEl = el.querySelector('strong');
+        const key = keyEl ? keyEl.textContent.replace(':', '').trim() : '';
+        const value = el.textContent.replace(keyEl?.textContent || '', '').trim();
+        if (key && value) {
+          if (currentSection === 'Status Info' && key.toLowerCase() !== 'otp') return;
+          sections[currentSection].push({ key, value });
+        }
+      } else if (currentSection === 'Extra Charges' && el.tagName === 'OL') {
+        sections[currentSection] = el.outerHTML;
+      }
+    });
+
+    return Object.entries(sections).map(([title, data]) => {
+      if (title === 'Extra Charges' && typeof data === 'string') {
+        return `
+          <div class="section">
+            <div class="section-title">${title}</div>
+            <div class="charges">${data}</div>
+          </div>`;
+      }
+
+      if (!Array.isArray(data) || data.length === 0) return '';
+
+      let fieldsHtml = '';
+      let specialLine = '';
+
+      data.forEach(item => {
+        const keyLower = item.key.toLowerCase();
+
+        if (title === 'Payment Info' && keyLower === 'payment type') {
+          fieldsHtml += `
+            <div class="field"><strong>${item.key}</strong> ${item.value}</div>
+            <div class="field"><strong>Created At</strong> ${createdAt}</div>`;
+        } else if (title === 'Payment Info' && keyLower === 'total amount') {
+          specialLine = `<div class="total-line">${item.key}: ${item.value}</div>`;
+        } else if (title === 'Status Info' && keyLower === 'otp') {
+          specialLine = `<div class="total-line">${item.key}: ${item.value}</div>`;
+        } else {
+          fieldsHtml += `<div class="field"><strong>${item.key}</strong> ${item.value}</div>`;
+        }
+      });
+
+      return `
+        <div class="section">
+          <div class="section-title">${title}</div>
+          <div class="two-col">${fieldsHtml}</div>
+          ${specialLine}
+        </div>`;
+    }).join('');
+  }
+</script>
+{% endblock content %}

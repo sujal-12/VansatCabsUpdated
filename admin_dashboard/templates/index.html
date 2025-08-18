@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% block content %}
+
+<div class="background">
+    <div class="background-content">
+        <img src="{% static 'images/vansat_bg_logo.png' %}" alt="Vansat Cabs" class="logo" />
+        <h1>Welcome to Vansat Cabs</h1>
+        <p>Your trusted partner for safe and reliable transportation. Book your ride now!</p>
+        <a href="#" class="btn btn-dark btn-rounded btn-fw">Book a Ride</a>
+    </div>
+</div>
+<div class="content-wrapper">
+    <div class="row">
+        <h1 class="text-center mb-3">Our Services</h1>
+        <div class="col-md-4 grid-margin stretch-card">
+            <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Ariport Drops</h4>
+                <div class="media">
+                <i class="mdi mdi-airplane icon-md text-info d-flex align-self-start me-3"></i>
+                <div class="media-body">
+                    <p class="card-text">Experience seamless airport transfers with our dependable service, ensuring timely pickups and drop-offs for every flight.</p>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="col-md-4 grid-margin stretch-card">
+            <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Railway Station Drops</h4>
+                <div class="media">
+                <i class="mdi mdi-train icon-md text-info d-flex align-self-center me-3"></i>
+                <div class="media-body">
+                    <p class="card-text">From your doorstep to the station platform, enjoy a seamless and comfortable ride with our dedicated services.</p>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="col-md-4 grid-margin stretch-card">
+            <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Outstations</h4>
+                <div class="media">
+                <i class="mdi mdi-google-maps icon-md text-info d-flex align-self-end me-3"></i>
+                <div class="media-body">
+                    <p class="card-text">From solo adventures to family vacations, choose the perfect ride for your journey beyond the city.</p>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

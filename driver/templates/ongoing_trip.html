@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Add in <head> of your base template -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <title>Ongoing Trip</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      background-color: #f5f5f5;
+    }
+
+    #map {
+      height: calc(100% - 250px);
+      transition: height 0.3s ease-in-out;
+    }
+
+    .slider {
+      height: 250px;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: #fff;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+      padding: 16px;
+      overflow-y: auto;
+      transition: transform 0.3s ease-in-out;
+      z-index: 1000;
+    }
+
+    .slider.open {
+      transform: translateY(-200px);
+    }
+
+    .handle {
+      width: 60px;
+      height: 5px;
+      background: #ccc;
+      border-radius: 5px;
+      margin: 0 auto 10px;
+      cursor: pointer;
+    }
+
+    .slider-header {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .trip-info {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .trip-info p {
+      margin: 6px 0;
+    }
+
+    .btn-complete {
+      width: 100%;
+      padding: 12px;
+      background-color: green;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    @media screen and (max-width: 600px) {
+      .slider {
+        height: 300px;
+        padding: 12px;
+      }
+
+      .slider.open {
+        transform: translateY(-180px);
+      }
+
+      .slider-header {
+        font-size: 16px;
+      }
+
+      .btn-complete {
+        font-size: 15px;
+        padding: 10px;
+      }
+
+      .trip-info {
+        font-size: 13px;
+      }
+    }
+
+    .vehicle-icon {
+      width: 32px;
+      height: 32px;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/684/684908.png');
+      /* vehicle icon */
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="map"></div>
+
+  {% if assigned_trip %}
+  <div class="slider" id="tripSlider">
+    <div class="handle" onclick="toggleSlider()"></div>
+    <div class="slider-header">Trip Details</div>
+    <div class="trip-info">
+      <p><strong>From:</strong> {{ assigned_trip.from_city }}</p>
+      <p><strong>To:</strong> {{ assigned_trip.to_city }}</p>
+      <p><strong>Date:</strong> {{ assigned_trip.date }}</p>
+      <p><strong>Time:</strong> {{ assigned_trip.time }}</p>
+      <p><strong>Status:</strong> {{ assigned_trip.status|default:"N/A" }}</p>
+    </div>
+
+    {% if assigned_trip.status != 'Completed' %}
+    <form action="" method="post">
+      {% csrf_token %}
+      <div style="display: flex; gap: 10px;">
+        {% if assigned_trip.status == 'Pending' %}
+        <button class="btn-complete" type="submit" name="action" value="start" style="background-color: #007bff;">
+          Start Trip
+        </button>
+        <button class="btn-complete" type="button" disabled style="background-color: green; opacity: 0.6;">
+          Complete Trip
+        </button>
+        {% elif assigned_trip.status == 'Ongoing' %}
+        <button class="btn-complete" type="button" disabled style="background-color: #007bff; opacity: 0.6;">
+          Start Trip
+        </button>
+        <button class="btn-complete" type="button" onclick="confirmCompleteTrip()" style="background-color: green;">
+          Complete Trip
+        </button>
+        {% endif %}
+      </div>
+    </form>
+    {% else %}
+    <p><strong>Status:</strong> Completed</p>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="slider" id="tripSlider">
+    <div class="slider-header">No Ongoing Trips Assigned</div>
+  </div>
+  {% endif %}
+
+  <!-- Extra Charges Modal (Bootstrap) -->
+  <div id="extraChargesModal" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Add Extra Charges</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+            onclick="closeExtraModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="complete">
+            <input type="hidden" name="add_extra_charges" value="yes">
+            <div id="extraFields" class="mb-3">
+              <div class="row g-2 mb-2">
+                <div class="col-6">
+                  <input type="text" name="extra_key[]" class="form-control" placeholder="Charge Type" required>
+                </div>
+                <div class="col-6">
+                  <input type="number" name="extra_value[]" class="form-control" placeholder="Amount" required>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="addExtraField()">+ Add More</button>
+            <div class="d-flex justify-content-end gap-2">
+              <button type="submit" class="btn btn-success">Submit</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="closeExtraModal()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal (Bootstrap) -->
+  <div class="modal fade" id="confirmationPopup" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title" id="confirmationModalLabel">Extra Charges</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+            onclick="closeConfirmationPopup()"></button>
+        </div>
+        <div class="modal-body">
+          <p>Do you want to add extra charges before completing the trip?</p>
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <button class="btn btn-primary" onclick="showExtraModal()">Yes</button>
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="complete">
+              <input type="hidden" name="add_extra_charges" value="no">
+              <button type="submit" class="btn btn-secondary">No</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Map -->
+  <script>
+    let map;
+    let directionsService;
+    let directionsRenderer;
+    let vehicleMarker;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 20.5937, lng: 78.9629 },
+        zoom: 5
+      });
+
+      directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer({
+        map: map,
+        suppressMarkers: false
+      });
+
+      {% if assigned_trip %}
+      const fromCity = "{{ assigned_trip.from_city|escapejs }}";
+      const toCity = "{{ assigned_trip.to_city|escapejs }}";
+      const status = "{{ assigned_trip.status }}";
+
+      calculateAndDisplayRoute(fromCity, toCity);
+
+      if (status === "Ongoing") {
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ address: fromCity }, function (results, status) {
+          if (status === "OK" && results[0]) {
+            const location = results[0].geometry.location;
+            vehicleMarker = new google.maps.Marker({
+              position: location,
+              map: map,
+              icon: {
+                url: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+                scaledSize: new google.maps.Size(32, 32)
+              },
+              title: "Vehicle"
+            });
+            map.setCenter(location);
+            map.setZoom(10);
+          }
+        });
+      }
+      {% endif %}
+    }
+
+    function calculateAndDisplayRoute(from, to) {
+      directionsService.route(
+        {
+          origin: from,
+          destination: to,
+          travelMode: google.maps.TravelMode.DRIVING
+        },
+        (response, status) => {
+          if (status === "OK") {
+            directionsRenderer.setDirections(response);
+          } else {
+            alert("Directions request failed due to " + status);
+          }
+        }
+      );
+    }
+
+    function toggleSlider() {
+      document.getElementById('tripSlider').classList.toggle('open');
+    }
+  </script>
+
+  <!-- Bootstrap + Custom Modal Logic -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let extraModal = new bootstrap.Modal(document.getElementById('extraChargesModal'));
+    let confirmModal = new bootstrap.Modal(document.getElementById('confirmationPopup'));
+
+    function confirmCompleteTrip() {
+      confirmModal.show();
+    }
+
+    function showExtraModal() {
+      confirmModal.hide();
+      extraModal.show();
+    }
+
+    function closeExtraModal() {
+      extraModal.hide();
+    }
+
+    function closeConfirmationPopup() {
+      confirmModal.hide();
+    }
+
+    function addExtraField() {
+      const container = document.getElementById('extraFields');
+      const field = document.createElement('div');
+      field.className = 'row g-2 mb-2';
+      field.innerHTML = `
+        <div class="col-6">
+          <input type="text" name="extra_key[]" class="form-control" placeholder="Charge Type" required>
+        </div>
+        <div class="col-6">
+          <input type="number" name="extra_value[]" class="form-control" placeholder="Amount" required>
+        </div>
+      `;
+      container.appendChild(field);
+    }
+  </script>
+
+  <!-- Google Maps API -->
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8K8LRL9aOacWYYxIQn1YyeaJQVRzJqvM&libraries=places&callback=initMap">
+    </script>
+
+</body>
+
+
+  
+
+</html>

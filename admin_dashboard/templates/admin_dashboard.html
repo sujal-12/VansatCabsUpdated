@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Admin Dashboard{% endblock title %}
+
+{% block content %}
+<style>
+    .card-cancelled {
+        background: linear-gradient(135deg, #ff5e62, #ff9966);
+        color: white;
+    }
+
+    .card-total-trips {
+        background: #34589e;
+        color: #ffffff;
+        border-radius: 20px;
+    }
+
+    .card-total-trips .total-label {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .card-total-trips .total-count {
+        font-size: 40px;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .card-total-trips .total-date {
+        font-size: 14px;
+        margin-top: 5px;
+    }
+</style>
+
+<div class="container-fluid page-body-wrapper">
+    {% include "sidebar.html" %}
+    <div class="main-panel">
+        <div class="content-wrapper">
+            <!-- Header -->
+            <div class="row col-lg-12 col-md-12 col-sm-12">
+                <div class="col-md-12 grid-margin">
+                    <div class="row col-lg-12 col-md-12 col-sm-12">
+                        <div class="col-12 col-xl-8 mb-4 mb-xl-0">
+                            <h3 class="font-weight-bold">Welcome, {{ user.first_name }} {{ user.last_name }} </h3>
+                            <h6 class="font-weight-normal mb-0">All systems are running smoothly! </h6>
+                        </div>
+                        <div class="col-12 col-xl-4">
+                            <div class="justify-content-end d-flex align-items-center">
+                                <span class="mx-2">
+                                    <h6> Select Date: </h6>
+                                </span>
+                                <div class="form-group ml-2">
+                                    <input type="date" class="form-control" id="today" style="width: 200px;"
+                                        value="{{ selected_date }}" onchange="filterByDate(this.value)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Boxes -->
+            <div class="row col-lg-12 col-md-12 col-sm-12">
+                <div class="col-md-12 grid-margin transparent">
+                    <!-- First Row: 4 Cards -->
+                    <div class="row col-lg-12 col-md-12 col-sm-12">
+                        <div class="col-md-3 mb-4 stretch-card transparent">
+                            <div class="card card-tale h-100">
+                                <div class="card-body p-3">
+                                    <a href="{% url 'trips_by_status' %}?status=Completed&date={{ selected_date }}"
+                                    style="text-decoration: none; color: inherit;">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <!-- Left side: title & date -->
+                                            <div>
+                                                <p class="fw-bold mb-1" style="font-size: 16px;">
+                                                    Completed Trips
+                                                </p>
+                                                <p class="mb-0" style="font-size: 13px;">
+                                                    on {{ selected_date }}
+                                                </p>
+                                                <i class="mdi mdi-bookmark-check" style="font-size: 30px; color: #ffffffcc;"></i>
+                                            </div>
+
+                                            <!-- Right side: count -->
+                                            <div class="text-end me-2 mt-4">
+                                                <p class="mb-0" style="font-size: 50px; font-weight: bold;">
+                                                    {{ completed_count }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4 stretch-card transparent">
+                            <div class="card card-light-blue">
+                                <div class="card-body p-3">
+                                    <a href="{% url 'trips_by_status' %}?status=Ongoing&date={{ selected_date }}"
+                                        style="text-decoration: none; color: inherit;">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <!-- Left side: title & date -->
+                                            <div>
+                                                <p class="fw-bold mb-1" style="font-size: 16px;">
+                                                    Ongoing Trips
+                                                </p>
+                                                <p class="mb-0" style="font-size: 13px;">
+                                                    on {{ selected_date }}
+                                                </p>
+                                                <i class="mdi mdi-car-wash" style="font-size: 30px; color: #ffffffcc;"></i>
+                                            </div>
+
+                                            <!-- Right side: count -->
+                                            <div class="text-end me-2 mt-4">
+                                                <p class="mb-0" style="font-size: 50px; font-weight: bold;">
+                                                    {{ ongoing_count }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4 stretch-card transparent">
+                            <div class="card card-dark-blue">
+                                <div class="card-body p-3">
+                                    <a href="{% url 'trips_by_status' %}?status=Pending&date={{ selected_date }}"
+                                        style="text-decoration: none; color: inherit;">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <!-- Left side: title & date -->
+                                            <div>
+                                                <p class="fw-bold mb-1" style="font-size: 16px;">
+                                                    Pending Trips
+                                                </p>
+                                                <p class="mb-0" style="font-size: 13px;">
+                                                    on {{ selected_date }}
+                                                </p>
+                                                <i class="mdi mdi-timer-sand" style="font-size: 30px; color: #ffffffcc;"></i>
+                                            </div>
+
+                                            <!-- Right side: count -->
+                                            <div class="text-end me-2 mt-4">
+                                                <p class="mb-0" style="font-size: 50px; font-weight: bold;">
+                                                    {{ pending_count }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-4 stretch-card transparent">
+                            <div class="card card-cancelled">
+                                <div class="card-body p-3">
+                                    <a href="{% url 'trips_by_status' %}?status=Cancelled&date={{ selected_date }}"
+                                        style="text-decoration: none; color: inherit;">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <!-- Left side: title & date -->
+                                            <div>
+                                                <p class="fw-bold mb-1" style="font-size: 16px;">
+                                                    Cancelled Trips
+                                                </p>
+                                                <p class="mb-0" style="font-size: 13px;">
+                                                    on {{ selected_date }}
+                                                </p>
+                                                <i class="mdi mdi-minus-circle-outline" style="font-size: 30px; color: #ffffffcc;"></i>
+                                            </div>
+
+                                            <!-- Right side: count -->
+                                            <div class="text-end me-2 mt-4">
+                                                <p class="mb-0" style="font-size: 50px; font-weight: bold;">
+                                                    {{ cancelled_count }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second Row: Total Trips Card -->
+                    <div class="row col-lg-12 col-md-12 col-sm-12">
+                        <div class="col-md-12 mb-4 stretch-card transparent">
+                            <div class="card card-total-trips text-center py-3">
+                                <div class="card-body px-4">
+                                    <a href="{% url 'trips_by_status' %}?status=All&date={{ selected_date }}"
+                                        style="text-decoration: none; color: inherit;">
+                                        <p class="total-label">Total Trips</p>
+                                        <p class="total-count">{{ total_count }}</p>
+                                        <p class="total-date">Date: {{ selected_date }}</p>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JS Script -->
+<script src="{% static 'js/admin_dashboard.js' %}"></script>
+<script>
+    function filterByDate(date) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('date', date);
+        window.location.href = url.href;
+    }
+</script>
+{% endblock content %}

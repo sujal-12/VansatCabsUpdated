@@ -1,0 +1,1274 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ node.nodeCity }} Tariff Structure{% endblock title %}
+
+{% block content %}
+<div class="container-fluid page-body-wrapper">
+    {% include "sidebar.html" %}
+    <!-- Your main content goes here -->
+    <div class="main-panel">
+        <div class="content-wrapper">
+            <div class="row">
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Column 1 -->
+                                <div class="col-lg-6 col-md-6">
+                                    <h3 class="card-title mb-2">{{ node.nodeCity }} - Tariff Structure</h3>
+                                    <p class="card-description mb-2">
+                                        Includes standard cab charges within city limits and additional costs for airport services.
+                                    </p>
+                                </div>
+
+                                <!-- Column 2 -->
+                                <div class="col-lg-6 col-md-6">
+                                    <h3 class="card-title mb-2">Copy Tariff Structure</h3>
+                                    <form action="" method="post">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <label for="copyFromNode">Select Node to Copy From:</label>
+                                            <select class="form-select" id="copyFromNode" name="copy_from_node" required>
+                                                <option value="">-- Select Node --</option>
+                                                {% for n in nodes %}
+                                                    {% if n.nodeID != node.nodeID %}
+                                                        <option value="{{ n.nodeID }}">{{ n.nodeInitials }} - {{ n.nodeCity }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary mt-2">Copy Tariff</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="col-12 grid-margin stretch-card">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title">Fixed Charges Within City Limits & Airport-Related
+                                            Expenses</h4>
+                                        <form class="forms-sample" method="POST" action="">
+                                            {% csrf_token %}
+                                            <div class="row">
+                                                <div class="col-md-2 mb-3">
+                                                    <div class="form-group">
+                                                        <label for="node">Node</label>
+                                                        <input type="text" class="form-control" id="node"
+                                                            placeholder="node" name="node"
+                                                            value="{{ node.nodeInitials }}" readonly required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2 mb-3">
+                                                    <div class="form-group">
+                                                        <label for="fixedTerminalCharges">Terminal Charges (in
+                                                            INR)</label>
+                                                        <input type="number" class="form-control"
+                                                            id="fixedTerminalCharges" placeholder="0.0"
+                                                            name="fixedTerminalCharges"
+                                                            value="{{ fixed_tariff.fixedTerminalCharges|default:'' }}"
+                                                            min="0" step="0.1" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2 mb-3">
+                                                    <div class="form-group">
+                                                        <label for="fixedSurCharges">Sur Charges (in INR)</label>
+                                                        <input type="number" class="form-control" id="fixedSurCharges"
+                                                            placeholder="0.0" name="fixedSurCharges"
+                                                            value="{{ fixed_tariff.fixedSurCharges|default:'' }}"
+                                                            min="0" step="0.1" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2 mb-3">
+                                                    <div class="form-group">
+                                                        <label for="fixedTax">Fixed Tax (in %)</label>
+                                                        <input type="number" class="form-control" id="fixedTax"
+                                                            placeholder="0.0" name="fixedTax"
+                                                            value="{{ fixed_tariff.fixedTax|default:'' }}" min="0"
+                                                            max="28" step="0.1" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2 mb-3">
+                                                    <div class="form-group">
+                                                        <label for="vansatCommission">Vansat Commission(in %)</label>
+                                                        <input type="number" class="form-control" id="vansatCommission"
+                                                            placeholder="0.0" name="vansatCommission"
+                                                            value="{{ fixed_tariff.vansatCommission|default:'' }}"
+                                                            min="0" max="100" step="0.1" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2 mb-3">
+                                                    <div class="form-group">
+                                                        <label for="driverCommission">Driver Commission (in %)</label>
+                                                        <input type="number" class="form-control" id="driverCommission"
+                                                            placeholder="0.0" name="driverCommission"
+                                                            value="{{ fixed_tariff.driverCommission|default:'' }}"
+                                                            min="0" step="0.1" readonly required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <button type="submit" name="save_fixed_tariff" class="btn btn-primary">
+                                                    Save or Upgrade </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Airport Trnasfer-->
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="card-title mb-2">Airport Transfer</h3>
+                                </div>
+
+                            </div>
+                            <hr class="sidebar-divider">
+                            <div class="table-responsive mt-2">
+                                <form method="POST" action="">
+                                    {% csrf_token %}
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Trip Type</th>
+                                                <th>Perticulars (in KM Range)</th>
+                                                <th>Hatchback</th>
+                                                <th>Sedan</th>
+                                                <th>Premium Sedan</th>
+                                                <th>MUV</th>
+                                                <th>SUV</th>
+                                                <th>Premium SUV</th>
+                                                <th>AC Traveller</th>
+                                                <th>Bus</th>
+                                                <th>Hatchback Waiting</th>
+                                                <th>Sedan Waiting</th>
+                                                <th>Premium Sedan Waiting</th>
+                                                <th>MUV Waiting</th>
+                                                <th>SUV Waiting</th>
+                                                <th>Premium SUV Waiting</th>
+                                                <th>AC Traveller Waiting</th>
+                                                <th>Bus Waiting</th>
+                                                <th>Cancellation</th>
+                                                <th>Misc.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="text" name="name" class="form-control input-box"
+                                                        value="Airport Transfer" readonly required>
+                                                </td>
+                                                <td><input type="text" name="kmRange" class="form-control input-box"
+                                                        required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hatchback" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="seden" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="premiumSeden" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="muv" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="suv" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="premiumSUV" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="acTravellar" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="buses" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hatchbackWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="sedenWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="premiumSedenWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="muvWatingCharges" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="suvWatingCharges" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="premiumSUVWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="acTravellarWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="busesWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="cancellationCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="misleniousCharges" class="form-control input-box"
+                                                        required></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="submit" name="add_airport_tariff" class="btn btn-primary mt-3">Save
+                                        Tariff</button>
+                                </form>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Trip Type</th>
+                                            <th>Perticulars (in KM Range)</th>
+                                            <th>Hatchback</th>
+                                            <th>Sedan</th>
+                                            <th>Premium Sedan</th>
+                                            <th>MUV</th>
+                                            <th>SUV</th>
+                                            <th>Premium SUV</th>
+                                            <th>AC Traveller</th>
+                                            <th>Bus</th>
+                                            <th>Hatchback Waiting</th>
+                                            <th>Sedan Waiting</th>
+                                            <th>Premium Sedan Waiting</th>
+                                            <th>MUV Waiting</th>
+                                            <th>SUV Waiting</th>
+                                            <th>Premium SUV Waiting</th>
+                                            <th>AC Traveller Waiting</th>
+                                            <th>Bus Waiting</th>
+                                            <th>Cancellation</th>
+                                            <th>Misc.</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for air in airport_tariff %}
+                                        <tr>
+                                            <td>{{ air.name }}</td>
+                                            <td>{{ air.kmRange }}</td>
+                                            <td>{{ air.hatchback }}</td>
+                                            <td>{{ air.seden }}</td>
+                                            <td>{{ air.premiumSeden }}</td>
+                                            <td>{{ air.muv }}</td>
+                                            <td>{{ air.suv }}</td>
+                                            <td>{{ air.premiumSUV }}</td>
+                                            <td>{{ air.acTravellar }}</td>
+                                            <td>{{ air.buses }}</td>
+                                            <td>{{ air.hatchbackWatingCharges }}</td>
+                                            <td>{{ air.sedenWatingCharges }}</td>
+                                            <td>{{ air.premiumSedenWatingCharges }}</td>
+                                            <td>{{ air.muvWatingCharges }}</td>
+                                            <td>{{ air.suvWatingCharges }}</td>
+                                            <td>{{ air.premiumSUVWatingCharges }}</td>
+                                            <td>{{ air.acTravellarWatingCharges }}</td>
+                                            <td>{{ air.busesWatingCharges }}</td>
+                                            <td>{{ air.cancellationCharges }}</td>
+                                            <td>{{ air.misleniousCharges }}</td>
+                                            <td>
+                                                <a href="javascript:void(0);"
+                                                    class="btn btn-outline-primary btn-sm edit-tariff"
+                                                    data-id="{{ air.id }}" data-name="{{ air.name }}"
+                                                    data-kmrange="{{ air.kmRange }}"
+                                                    data-hatchback="{{ air.hatchback }}" data-seden="{{ air.seden }}"
+                                                    data-premiumseden="{{ air.premiumSeden }}" data-muv="{{ air.muv }}"
+                                                    data-suv="{{ air.suv }}" data-premiumsuv="{{ air.premiumSUV }}"
+                                                    data-actravellar="{{ air.acTravellar }}"
+                                                    data-buses="{{ air.buses }}"
+                                                    data-hatchbackwaiting="{{ air.hatchbackWatingCharges }}"
+                                                    data-sedenwaiting="{{ air.sedenWatingCharges }}"
+                                                    data-premiumsedenwaiting="{{ air.premiumSedenWatingCharges }}"
+                                                    data-muvwaiting="{{ air.muvWatingCharges }}"
+                                                    data-suvwaiting="{{ air.suvWatingCharges }}"
+                                                    data-premiumsuvwaiting="{{ air.premiumSUVWatingCharges }}"
+                                                    data-actravellarwaiting="{{ air.acTravellarWatingCharges }}"
+                                                    data-buseswaiting="{{ air.busesWatingCharges }}"
+                                                    data-cancellation="{{ air.cancellationCharges }}"
+                                                    data-misc="{{ air.misleniousCharges }}">
+                                                    Edit
+                                                </a>
+                                                <a href="{% url 'delete_airport_tariff' node.nodeID air.id %}"
+                                                    class="btn btn-outline-danger btn-sm">Delete</a>
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Airport Trnasfer-->
+                <!--Railway Transfer-->
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="card-title mb-2">Railway Transfer</h3>
+                                </div>
+
+                            </div>
+                            <hr class="sidebar-divider">
+                            <div class="table-responsive mt-2">
+                                <form method="POST" action="">
+                                    {% csrf_token %}
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Trip Type</th>
+                                                <th>Railway Station Name</th>
+                                                <th>Hatchback</th>
+                                                <th>Sedan</th>
+                                                <th>Premium Sedan</th>
+                                                <th>MUV</th>
+                                                <th>SUV</th>
+                                                <th>Premium SUV</th>
+                                                <th>AC Traveller</th>
+                                                <th>Bus</th>
+                                                <th>Hatchback Waiting</th>
+                                                <th>Sedan Waiting</th>
+                                                <th>Premium Sedan Waiting</th>
+                                                <th>MUV Waiting</th>
+                                                <th>SUV Waiting</th>
+                                                <th>Premium SUV Waiting</th>
+                                                <th>AC Traveller Waiting</th>
+                                                <th>Bus Waiting</th>
+                                                <th>Cancellation</th>
+                                                <th>Misc.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="text" name="name" class="form-control input-box"
+                                                        value="Railway Transfer" readonly required>
+                                                </td>
+                                                <td><input type="text" name="railwayStationName" class="form-control input-box"
+                                                        required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railhatchback" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railseden" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railpremiumSeden" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railmuv" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railsuv" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railpremiumSUV" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railacTravellar" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railbuses" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railhatchbackWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railsedenWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railpremiumSedenWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railmuvWatingCharges" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railsuvWatingCharges" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railpremiumSUVWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railacTravellarWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railbusesWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railcancellationCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="railmisleniousCharges" class="form-control input-box"
+                                                        required></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="submit" name="add_railway_tariff" class="btn btn-primary mt-3">Save
+                                        Tariff</button>
+                                </form>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Trip Type</th>
+                                            <th>Railway Station Name</th>
+                                            <th>Hatchback</th>
+                                            <th>Sedan</th>
+                                            <th>Premium Sedan</th>
+                                            <th>MUV</th>
+                                            <th>SUV</th>
+                                            <th>Premium SUV</th>
+                                            <th>AC Traveller</th>
+                                            <th>Bus</th>
+                                            <th>Hatchback Waiting</th>
+                                            <th>Sedan Waiting</th>
+                                            <th>Premium Sedan Waiting</th>
+                                            <th>MUV Waiting</th>
+                                            <th>SUV Waiting</th>
+                                            <th>Premium SUV Waiting</th>
+                                            <th>AC Traveller Waiting</th>
+                                            <th>Bus Waiting</th>
+                                            <th>Cancellation</th>
+                                            <th>Misc.</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for rail in railway_tariff %}
+                                        <tr>
+                                            <td>{{ rail.name }}</td>
+                                            <td>{{ rail.railwayStationName }}</td>
+                                            <td>{{ rail.hatchback }}</td>
+                                            <td>{{ rail.seden }}</td>
+                                            <td>{{ rail.premiumSeden }}</td>
+                                            <td>{{ rail.muv }}</td>
+                                            <td>{{ rail.suv }}</td>
+                                            <td>{{ rail.premiumSUV }}</td>
+                                            <td>{{ rail.acTravellar }}</td>
+                                            <td>{{ rail.buses }}</td>
+                                            <td>{{ rail.hatchbackWatingCharges }}</td>
+                                            <td>{{ rail.sedenWatingCharges }}</td>
+                                            <td>{{ rail.premiumSedenWatingCharges }}</td>
+                                            <td>{{ rail.muvWatingCharges }}</td>
+                                            <td>{{ rail.suvWatingCharges }}</td>
+                                            <td>{{ rail.premiumSUVWatingCharges }}</td>
+                                            <td>{{ rail.acTravellarWatingCharges }}</td>
+                                            <td>{{ rail.busesWatingCharges }}</td>
+                                            <td>{{ rail.cancellationCharges }}</td>
+                                            <td>{{ rail.misleniousCharges }}</td>
+                                            <td>
+                                                <a href="javascript:void(0);"
+                                                    class="btn btn-outline-primary btn-sm edit-railway-tariff"
+                                                    data-id="{{ rail.id }}"
+                                                    data-name="{{ rail.name }}"
+                                                    data-railwaystationname="{{ rail.railwayStationName }}"
+                                                    data-railhatchback="{{ rail.hatchback }}"
+                                                    data-railseden="{{ rail.seden }}"
+                                                    data-railpremiumseden="{{ rail.premiumSeden }}"
+                                                    data-railmuv="{{ rail.muv }}"
+                                                    data-railsuv="{{ rail.suv }}"
+                                                    data-railpremiumsuv="{{ rail.premiumSUV }}"
+                                                    data-railactravellar="{{ rail.acTravellar }}"
+                                                    data-railbuses="{{ rail.buses }}"
+                                                    data-railhatchbackwaiting="{{ rail.hatchbackWatingCharges }}"
+                                                    data-railsedenwaiting="{{ rail.sedenWatingCharges }}"
+                                                    data-railpremiumsedenwaiting="{{ rail.premiumSedenWatingCharges }}"
+                                                    data-railmuvwaiting="{{ rail.muvWatingCharges }}"
+                                                    data-railsuvwaiting="{{ rail.suvWatingCharges }}"
+                                                    data-railpremiumsuvwaiting="{{ rail.premiumSUVWatingCharges }}"
+                                                    data-railactravellarwaiting="{{ rail.acTravellarWatingCharges }}"
+                                                    data-railbuseswaiting="{{ rail.busesWatingCharges }}"
+                                                    data-railcancellation="{{ rail.cancellationCharges }}"
+                                                    data-railmisc="{{ rail.misleniousCharges }}">
+                                                    Edit
+                                                    </a>
+                                                <a href="{% url 'delete_railway_tariff' node.nodeID rail.id %}"
+                                                    class="btn btn-outline-danger btn-sm">Delete</a>
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Railway Transfer-->
+                <!--Outstation Transfer-->
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="card-title mb-2">Outstation</h3>
+                                </div>
+
+                            </div>
+                            <hr class="sidebar-divider">
+                            <div class="table-responsive mt-2">
+                                <form method="POST" action="">
+                                    {% csrf_token %}
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Trip Type</th>
+                                                <th>Perticulars (in KM Range)</th>
+                                                <th>Hatchback (rate/KM)</th>
+                                                <th>Sedan (rate/KM)</th>
+                                                <th>Premium Sedan (rate/KM)</th>
+                                                <th>MUV (rate/KM)</th>
+                                                <th>SUV (rate/KM)</th>
+                                                <th>Premium SUV (rate/KM)</th>
+                                                <th>AC Traveller (rate/KM)</th>
+                                                <th>Bus (rate/KM)</th>
+                                                <th>Hatchback Waiting</th>
+                                                <th>Sedan Waiting</th>
+                                                <th>Premium Sedan Waiting</th>
+                                                <th>MUV Waiting</th>
+                                                <th>SUV Waiting</th>
+                                                <th>Premium SUV Waiting</th>
+                                                <th>AC Traveller Waiting</th>
+                                                <th>Bus Waiting</th>
+                                                <th>Cancellation</th>
+                                                <th>Misc.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="text" name="name" class="form-control input-box"
+                                                        value="Outstation" readonly required>
+                                                </td>
+                                                <td><input type="text" name="outkmRange" class="form-control input-box"
+                                                        required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outhatchback" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outseden" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outpremiumSeden" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outmuv" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outsuv" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outpremiumSUV" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outacTravellar" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outbuses" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outhatchbackWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outsedenWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outpremiumSedenWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outmuvWatingCharges" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outsuvWatingCharges" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outpremiumSUVWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outacTravellarWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outbusesWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outcancellationCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="outmisleniousCharges" class="form-control input-box"
+                                                        required></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="submit" name="add_outstation_tariff" class="btn btn-primary mt-3">Save
+                                        Tariff</button>
+                                </form>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Trip Type</th>
+                                            <th>Perticulars (in KM Range)</th>
+                                            <th>Hatchback</th>
+                                            <th>Sedan</th>
+                                            <th>Premium Sedan</th>
+                                            <th>MUV</th>
+                                            <th>SUV</th>
+                                            <th>Premium SUV</th>
+                                            <th>AC Traveller</th>
+                                            <th>Bus</th>
+                                            <th>Hatchback Waiting</th>
+                                            <th>Sedan Waiting</th>
+                                            <th>Premium Sedan Waiting</th>
+                                            <th>MUV Waiting</th>
+                                            <th>SUV Waiting</th>
+                                            <th>Premium SUV Waiting</th>
+                                            <th>AC Traveller Waiting</th>
+                                            <th>Bus Waiting</th>
+                                            <th>Cancellation</th>
+                                            <th>Misc.</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for out in outstation_tariff %}
+                                        <tr>
+                                            <td>{{ out.name }}</td>
+                                            <td>{{ out.kmRange }}</td>
+                                            <td>{{ out.hatchback }}</td>
+                                            <td>{{ out.seden }}</td>
+                                            <td>{{ out.premiumSeden }}</td>
+                                            <td>{{ out.muv }}</td>
+                                            <td>{{ out.suv }}</td>
+                                            <td>{{ out.premiumSUV }}</td>
+                                            <td>{{ out.acTravellar }}</td>
+                                            <td>{{ out.buses }}</td>
+                                            <td>{{ out.hatchbackWatingCharges }}</td>
+                                            <td>{{ out.sedenWatingCharges }}</td>
+                                            <td>{{ out.premiumSedenWatingCharges }}</td>
+                                            <td>{{ out.muvWatingCharges }}</td>
+                                            <td>{{ out.suvWatingCharges }}</td>
+                                            <td>{{ out.premiumSUVWatingCharges }}</td>
+                                            <td>{{ out.acTravellarWatingCharges }}</td>
+                                            <td>{{ out.busesWatingCharges }}</td>
+                                            <td>{{ out.cancellationCharges }}</td>
+                                            <td>{{ out.misleniousCharges }}</td>
+                                            <td>
+                                                <a href="javascript:void(0);"
+                                                    class="btn btn-outline-primary btn-sm edit-outstation-tariff"
+                                                    data-id="{{ out.id }}" data-name="{{ out.name }}"
+                                                    data-outkmrange="{{ out.kmRange }}"
+                                                    data-outhatchback="{{ out.hatchback }}" data-outseden="{{ out.seden }}"
+                                                    data-outpremiumseden="{{ out.premiumSeden }}" data-outmuv="{{ out.muv }}"
+                                                    data-outsuv="{{ out.suv }}" data-outpremiumsuv="{{ out.premiumSUV }}"
+                                                    data-outactravellar="{{ out.acTravellar }}"
+                                                    data-outbuses="{{ out.buses }}"
+                                                    data-outhatchbackwaiting="{{ out.hatchbackWatingCharges }}"
+                                                    data-outsedenwaiting="{{ out.sedenWatingCharges }}"
+                                                    data-outpremiumsedenwaiting="{{ out.premiumSedenWatingCharges }}"
+                                                    data-outmuvwaiting="{{ out.muvWatingCharges }}"
+                                                    data-outsuvwaiting="{{ out.suvWatingCharges }}"
+                                                    data-outpremiumsuvwaiting="{{ out.premiumSUVWatingCharges }}"
+                                                    data-outactravellarwaiting="{{ out.acTravellarWatingCharges }}"
+                                                    data-outbuseswaiting="{{ out.busesWatingCharges }}"
+                                                    data-outcancellation="{{ out.cancellationCharges }}"
+                                                    data-outmisc="{{ out.misleniousCharges }}">
+                                                    Edit
+                                                </a>
+                                                <a href="{% url 'delete_outstation_tariff' node.nodeID out.id %}"
+                                                    class="btn btn-outline-danger btn-sm">Delete</a>
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Outstation Transfer-->
+                <!--Holiday Tour Transfer-->
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="card-title mb-2">Holiday Tour Packages</h3>
+                                </div>
+
+                            </div>
+                            <hr class="sidebar-divider">
+                            <div class="table-responsive mt-2">
+                                <form method="POST" action="">
+                                    {% csrf_token %}
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Trip Type</th>
+                                                <th>Package Name</th>
+                                                <th>Hatchback</th>
+                                                <th>Sedan</th>
+                                                <th>Premium Sedan</th>
+                                                <th>MUV</th>
+                                                <th>SUV</th>
+                                                <th>Premium SUV</th>
+                                                <th>AC Traveller</th>
+                                                <th>Bus</th>
+                                                <th>Hatchback Waiting</th>
+                                                <th>Sedan Waiting</th>
+                                                <th>Premium Sedan Waiting</th>
+                                                <th>MUV Waiting</th>
+                                                <th>SUV Waiting</th>
+                                                <th>Premium SUV Waiting</th>
+                                                <th>AC Traveller Waiting</th>
+                                                <th>Bus Waiting</th>
+                                                <th>Cancellation</th>
+                                                <th>Misc.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="text" name="name" class="form-control input-box"
+                                                        value="Holiday Tours" readonly required>
+                                                </td>
+                                                <td><input type="text" name="packageName" class="form-control input-box"
+                                                        required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidayhatchback" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidayseden" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaypremiumSeden" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaymuv" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaysuv" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaypremiumSUV" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidayacTravellar" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaybuses" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidayhatchbackWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaysedenWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaypremiumSedenWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaymuvWatingCharges" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaysuvWatingCharges" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaypremiumSUVWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidayacTravellarWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaybusesWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaycancellationCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="holidaymisleniousCharges" class="form-control input-box"
+                                                        required></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="submit" name="add_holiday_tour_tariff" class="btn btn-primary mt-3">Save
+                                        Tariff</button>
+                                </form>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Trip Type</th>
+                                            <th>Package Name</th>
+                                            <th>Hatchback</th>
+                                            <th>Sedan</th>
+                                            <th>Premium Sedan</th>
+                                            <th>MUV</th>
+                                            <th>SUV</th>
+                                            <th>Premium SUV</th>
+                                            <th>AC Traveller</th>
+                                            <th>Bus</th>
+                                            <th>Hatchback Waiting</th>
+                                            <th>Sedan Waiting</th>
+                                            <th>Premium Sedan Waiting</th>
+                                            <th>MUV Waiting</th>
+                                            <th>SUV Waiting</th>
+                                            <th>Premium SUV Waiting</th>
+                                            <th>AC Traveller Waiting</th>
+                                            <th>Bus Waiting</th>
+                                            <th>Cancellation</th>
+                                            <th>Misc.</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for holiday in holiday_tariff %}
+                                        <tr>
+                                            <td>{{ holiday.name }}</td>
+                                            <td>{{ holiday.packageName }}</td>
+                                            <td>{{ holiday.hatchback }}</td>
+                                            <td>{{ holiday.seden }}</td>
+                                            <td>{{ holiday.premiumSeden }}</td>
+                                            <td>{{ holiday.muv }}</td>
+                                            <td>{{ holiday.suv }}</td>
+                                            <td>{{ holiday.premiumSUV }}</td>
+                                            <td>{{ holiday.acTravellar }}</td>
+                                            <td>{{ holiday.buses }}</td>
+                                            <td>{{ holiday.hatchbackWatingCharges }}</td>
+                                            <td>{{ holiday.sedenWatingCharges }}</td>
+                                            <td>{{ holiday.premiumSedenWatingCharges }}</td>
+                                            <td>{{ holiday.muvWatingCharges }}</td>
+                                            <td>{{ holiday.suvWatingCharges }}</td>
+                                            <td>{{ holiday.premiumSUVWatingCharges }}</td>
+                                            <td>{{ holiday.acTravellarWatingCharges }}</td>
+                                            <td>{{ holiday.busesWatingCharges }}</td>
+                                            <td>{{ holiday.cancellationCharges }}</td>
+                                            <td>{{ holiday.misleniousCharges }}</td>
+                                            <td>
+                                                <a href="javascript:void(0);"
+                                                    class="btn btn-outline-primary btn-sm edit-holiday-tariff"
+                                                    data-id="{{ holiday.id }}" data-name="{{ holiday.name }}"
+                                                    data-packageName="{{ holiday.packageName }}"
+                                                    data-holidayhatchback="{{ holiday.hatchback }}" data-holidayseden="{{ holiday.seden }}"
+                                                    data-holidaypremiumseden="{{ holiday.premiumSeden }}" data-holidaymuv="{{ holiday.muv }}"
+                                                    data-holidaysuv="{{ holiday.suv }}" data-holidaypremiumsuv="{{ holiday.premiumSUV }}"
+                                                    data-holidayactravellar="{{ holiday.acTravellar }}"
+                                                    data-holidaybuses="{{ holiday.buses }}"
+                                                    data-holidayhatchbackwaiting="{{ holiday.hatchbackWatingCharges }}"
+                                                    data-holidaysedenwaiting="{{ holiday.sedenWatingCharges }}"
+                                                    data-holidaypremiumsedenwaiting="{{ holiday.premiumSedenWatingCharges }}"
+                                                    data-holidaymuvwaiting="{{ holiday.muvWatingCharges }}"
+                                                    data-holidaysuvwaiting="{{ holiday.suvWatingCharges }}"
+                                                    data-holidaypremiumsuvwaiting="{{ holiday.premiumSUVWatingCharges }}"
+                                                    data-holidayactravellarwaiting="{{ holiday.acTravellarWatingCharges }}"
+                                                    data-holidaybuseswaiting="{{ holiday.busesWatingCharges }}"
+                                                    data-holidaycancellation="{{ holiday.cancellationCharges }}"
+                                                    data-holidaymisc="{{ holiday.misleniousCharges }}">
+                                                    Edit
+                                                </a>
+                                                <a href="{% url 'delete_holiday_tariff' node.nodeID holiday.id %}"
+                                                    class="btn btn-outline-danger btn-sm">Delete</a>
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Holiday Tour Transfer-->
+                <!--Hourly Rental Transfer-->
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="card-title mb-2">Hourly Rental</h3>
+                                </div>
+
+                            </div>
+                            <hr class="sidebar-divider">
+                            <div class="table-responsive mt-2">
+                                <form method="POST" action="">
+                                    {% csrf_token %}
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Trip Type</th>
+                                                <th>No of Hours</th>
+                                                <th>No of KM</th>
+                                                <th>Hatchback</th>
+                                                <th>Sedan</th>
+                                                <th>Premium Sedan</th>
+                                                <th>MUV</th>
+                                                <th>SUV</th>
+                                                <th>Premium SUV</th>
+                                                <th>AC Traveller</th>
+                                                <th>Bus</th>
+                                                <th>Hatchback Waiting</th>
+                                                <th>Sedan Waiting</th>
+                                                <th>Premium Sedan Waiting</th>
+                                                <th>MUV Waiting</th>
+                                                <th>SUV Waiting</th>
+                                                <th>Premium SUV Waiting</th>
+                                                <th>AC Traveller Waiting</th>
+                                                <th>Bus Waiting</th>
+                                                <th>Extra Charges/Min</th>
+                                                <th>Extra Charges/KM</th>
+                                                <th>Cancellation</th>
+                                                <th>Misc.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="text" name="name" class="form-control input-box"
+                                                        value="Hourly Rental" readonly required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hours" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="kms" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrhatchback" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrseden" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrpremiumSeden" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrmuv" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrsuv" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrpremiumSUV" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hracTravellar" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrbuses" class="form-control input-box" required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrhatchbackWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrsedenWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrpremiumSedenWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrmuvWatingCharges" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrsuvWatingCharges" class="form-control input-box" required>
+                                                </td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrpremiumSUVWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hracTravellarWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrbusesWatingCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="extraMin" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="extraKms" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrcancellationCharges" class="form-control input-box"
+                                                        required></td>
+                                                <td><input type="number" placeholder="0.0" value="" min="0" step="0.1"
+                                                        name="hrmisleniousCharges" class="form-control input-box"
+                                                        required></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="submit" name="add_hr_tariff" class="btn btn-primary mt-3">Save
+                                        Tariff</button>
+                                </form>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Trip Type</th>
+                                            <th>No of Hours</th>
+                                            <th>No of KM</th>
+                                            <th>Hatchback</th>
+                                            <th>Sedan</th>
+                                            <th>Premium Sedan</th>
+                                            <th>MUV</th>
+                                            <th>SUV</th>
+                                            <th>Premium SUV</th>
+                                            <th>AC Traveller</th>
+                                            <th>Bus</th>
+                                            <th>Hatchback Waiting</th>
+                                            <th>Sedan Waiting</th>
+                                            <th>Premium Sedan Waiting</th>
+                                            <th>MUV Waiting</th>
+                                            <th>SUV Waiting</th>
+                                            <th>Premium SUV Waiting</th>
+                                            <th>AC Traveller Waiting</th>
+                                            <th>Bus Waiting</th>
+                                            <th>Extra Charges/Min</th>
+                                            <th>Extra Charges/KM</th>
+                                            <th>Cancellation</th>
+                                            <th>Misc.</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for hr in hourly_rental_tariff %}
+                                        <tr>
+                                            <td>{{ hr.name }}</td>
+                                            <td>{{ hr.hours }}</td>
+                                            <td>{{ hr.kms }}</td>
+                                            <td>{{ hr.hatchback }}</td>
+                                            <td>{{ hr.seden }}</td>
+                                            <td>{{ hr.premiumSeden }}</td>
+                                            <td>{{ hr.muv }}</td>
+                                            <td>{{ hr.suv }}</td>
+                                            <td>{{ hr.premiumSUV }}</td>
+                                            <td>{{ hr.acTravellar }}</td>
+                                            <td>{{ hr.buses }}</td>
+                                            <td>{{ hr.hatchbackWatingCharges }}</td>
+                                            <td>{{ hr.sedenWatingCharges }}</td>
+                                            <td>{{ hr.premiumSedenWatingCharges }}</td>
+                                            <td>{{ hr.muvWatingCharges }}</td>
+                                            <td>{{ hr.suvWatingCharges }}</td>
+                                            <td>{{ hr.premiumSUVWatingCharges }}</td>
+                                            <td>{{ hr.acTravellarWatingCharges }}</td>
+                                            <td>{{ hr.busesWatingCharges }}</td>
+                                            <td>{{ hr.extraMin }}</td>
+                                            <td>{{ hr.extraKms }}</td>
+                                            <td>{{ hr.cancellationCharges }}</td>
+                                            <td>{{ hr.misleniousCharges }}</td>
+                                            <td>
+                                                <a href="javascript:void(0);"
+                                                    class="btn btn-outline-primary btn-sm edit-hr-tariff"
+                                                    data-id="{{ hr.id }}" data-name="{{ hr.name }}"
+                                                    data-hours="{{ hr.hours }}"
+                                                    data-kms="{{ hr.kms }}"
+                                                    data-hrhatchback="{{ hr.hatchback }}" data-hrseden="{{ hr.seden }}"
+                                                    data-hrpremiumseden="{{ hr.premiumSeden }}" data-hrmuv="{{ hr.muv }}"
+                                                    data-hrsuv="{{ hr.suv }}" data-hrpremiumsuv="{{ hr.premiumSUV }}"
+                                                    data-hractravellar="{{ hr.acTravellar }}"
+                                                    data-hrbuses="{{ hr.buses }}"
+                                                    data-hrhatchbackwaiting="{{ hr.hatchbackWatingCharges }}"
+                                                    data-hrsedenwaiting="{{ hr.sedenWatingCharges }}"
+                                                    data-hrpremiumsedenwaiting="{{ hr.premiumSedenWatingCharges }}"
+                                                    data-hrmuvwaiting="{{ hr.muvWatingCharges }}"
+                                                    data-hrsuvwaiting="{{ hr.suvWatingCharges }}"
+                                                    data-hrpremiumsuvwaiting="{{ hr.premiumSUVWatingCharges }}"
+                                                    data-hractravellarwaiting="{{ hr.acTravellarWatingCharges }}"
+                                                    data-hrbuseswaiting="{{ hr.busesWatingCharges }}"
+                                                    data-extraMin="{{ hr.extraMin }}"
+                                                    data-extraKms="{{ hr.extraKms }}"
+                                                    data-hrcancellation="{{ hr.cancellationCharges }}"
+                                                    data-hrmisc="{{ hr.misleniousCharges }}">
+                                                    Edit
+                                                </a>
+                                                <a href="{% url 'delete_hr_tariff' node.nodeID hr.id %}"
+                                                    class="btn btn-outline-danger btn-sm">Delete</a>
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Hourly Rental Transfer-->
+
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const vansatInput = document.getElementById('vansatCommission');
+                const driverInput = document.getElementById('driverCommission');
+
+                // Create an error message element
+                const errorSpan = document.createElement('span');
+                errorSpan.style.color = 'red';
+                errorSpan.style.fontSize = '0.85em';
+                errorSpan.id = 'vansatError';
+                vansatInput.parentNode.appendChild(errorSpan);
+
+                vansatInput.addEventListener('input', function () {
+                    const value = parseFloat(vansatInput.value);
+
+                    if (isNaN(value) || value < 0 || value > 100) {
+                        errorSpan.textContent = 'Please enter a value between 0 and 100.';
+                        driverInput.value = '';
+                    } else {
+                        errorSpan.textContent = '';
+                        const driverCommission = (100 - value).toFixed(1);
+                        driverInput.value = driverCommission;
+                    }
+                });
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const fixedTaxInput = document.getElementById('fixedTax');
+
+                // Create an error message element
+                const taxErrorSpan = document.createElement('span');
+                taxErrorSpan.style.color = 'red';
+                taxErrorSpan.style.fontSize = '0.85em';
+                taxErrorSpan.id = 'fixedTaxError';
+                fixedTaxInput.parentNode.appendChild(taxErrorSpan);
+
+                fixedTaxInput.addEventListener('input', function () {
+                    const value = parseFloat(fixedTaxInput.value);
+
+                    if (isNaN(value) || value < 0 || value > 28) {
+                        taxErrorSpan.textContent = 'Please enter a value between 0 and 28.';
+                    } else {
+                        taxErrorSpan.textContent = '';
+                    }
+                });
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const editTariffButtons = document.querySelectorAll('.edit-tariff');
+                editTariffButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        document.querySelector('[name="name"]').value = this.dataset.name;
+                        document.querySelector('[name="kmRange"]').value = this.dataset.kmrange;
+                        document.querySelector('[name="hatchback"]').value = this.dataset.hatchback;
+                        document.querySelector('[name="seden"]').value = this.dataset.seden;
+                        document.querySelector('[name="premiumSeden"]').value = this.dataset.premiumseden;
+                        document.querySelector('[name="muv"]').value = this.dataset.muv;
+                        document.querySelector('[name="suv"]').value = this.dataset.suv;
+                        document.querySelector('[name="premiumSUV"]').value = this.dataset.premiumsuv;
+                        document.querySelector('[name="acTravellar"]').value = this.dataset.actravellar;
+                        document.querySelector('[name="buses"]').value = this.dataset.buses;
+                        document.querySelector('[name="hatchbackWatingCharges"]').value = this.dataset.hatchbackwaiting;
+                        document.querySelector('[name="sedenWatingCharges"]').value = this.dataset.sedenwaiting;
+                        document.querySelector('[name="premiumSedenWatingCharges"]').value = this.dataset.premiumsedenwaiting;
+                        document.querySelector('[name="muvWatingCharges"]').value = this.dataset.muvwaiting;
+                        document.querySelector('[name="suvWatingCharges"]').value = this.dataset.suvwaiting;
+                        document.querySelector('[name="premiumSUVWatingCharges"]').value = this.dataset.premiumsuvwaiting;
+                        document.querySelector('[name="acTravellarWatingCharges"]').value = this.dataset.actravellarwaiting;
+                        document.querySelector('[name="busesWatingCharges"]').value = this.dataset.buseswaiting;
+                        document.querySelector('[name="cancellationCharges"]').value = this.dataset.cancellation;
+                        document.querySelector('[name="misleniousCharges"]').value = this.dataset.misc;
+                    });
+                });
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const editRailwayTariffButtons = document.querySelectorAll('.edit-railway-tariff');
+                editRailwayTariffButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        document.querySelector('[name="name"]').value = this.dataset.name;
+                        document.querySelector('[name="railwayStationName"]').value = this.dataset.railwaystationname;
+                        document.querySelector('[name="railhatchback"]').value = this.dataset.railhatchback;
+                        document.querySelector('[name="railseden"]').value = this.dataset.railseden;
+                        document.querySelector('[name="railpremiumSeden"]').value = this.dataset.railpremiumseden;
+                        document.querySelector('[name="railmuv"]').value = this.dataset.railmuv;
+                        document.querySelector('[name="railsuv"]').value = this.dataset.railsuv;
+                        document.querySelector('[name="railpremiumSUV"]').value = this.dataset.railpremiumsuv;
+                        document.querySelector('[name="railacTravellar"]').value = this.dataset.railactravellar;
+                        document.querySelector('[name="railbuses"]').value = this.dataset.railbuses;
+                        document.querySelector('[name="railhatchbackWatingCharges"]').value = this.dataset.railhatchbackwaiting;
+                        document.querySelector('[name="railsedenWatingCharges"]').value = this.dataset.railsedenwaiting;
+                        document.querySelector('[name="railpremiumSedenWatingCharges"]').value = this.dataset.railpremiumsedenwaiting;
+                        document.querySelector('[name="railmuvWatingCharges"]').value = this.dataset.railmuvwaiting;
+                        document.querySelector('[name="railsuvWatingCharges"]').value = this.dataset.railsuvwaiting;
+                        document.querySelector('[name="railpremiumSUVWatingCharges"]').value = this.dataset.railpremiumsuvwaiting;
+                        document.querySelector('[name="railacTravellarWatingCharges"]').value = this.dataset.railactravellarwaiting;
+                        document.querySelector('[name="railbusesWatingCharges"]').value = this.dataset.railbuseswaiting;
+                        document.querySelector('[name="railcancellationCharges"]').value = this.dataset.railcancellation;
+                        document.querySelector('[name="railmisleniousCharges"]').value = this.dataset.railmisc;
+                    });
+                });
+            });
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const editOutstationButtons = document.querySelectorAll('.edit-outstation-tariff');
+                    editOutstationButtons.forEach(button => {
+                        button.addEventListener('click', function () {
+                            document.querySelector('[name="name"]').value = this.dataset.name;
+                            document.querySelector('[name="outkmRange"]').value = this.dataset.outkmrange;
+                            document.querySelector('[name="outhatchback"]').value = this.dataset.outhatchback;
+                            document.querySelector('[name="outseden"]').value = this.dataset.outseden;
+                            document.querySelector('[name="outpremiumSeden"]').value = this.dataset.outpremiumseden;
+                            document.querySelector('[name="outmuv"]').value = this.dataset.outmuv;
+                            document.querySelector('[name="outsuv"]').value = this.dataset.outsuv;
+                            document.querySelector('[name="outpremiumSUV"]').value = this.dataset.outpremiumsuv;
+                            document.querySelector('[name="outacTravellar"]').value = this.dataset.outactravellar;
+                            document.querySelector('[name="outbuses"]').value = this.dataset.outbuses;
+                            document.querySelector('[name="outhatchbackWatingCharges"]').value = this.dataset.outhatchbackwaiting;
+                            document.querySelector('[name="outsedenWatingCharges"]').value = this.dataset.outsedenwaiting;
+                            document.querySelector('[name="outpremiumSedenWatingCharges"]').value = this.dataset.outpremiumsedenwaiting;
+                            document.querySelector('[name="outmuvWatingCharges"]').value = this.dataset.outmuvwaiting;
+                            document.querySelector('[name="outsuvWatingCharges"]').value = this.dataset.outsuvwaiting;
+                            document.querySelector('[name="outpremiumSUVWatingCharges"]').value = this.dataset.outpremiumsuvwaiting;
+                            document.querySelector('[name="outacTravellarWatingCharges"]').value = this.dataset.outactravellarwaiting;
+                            document.querySelector('[name="outbusesWatingCharges"]').value = this.dataset.outbuseswaiting;
+                            document.querySelector('[name="outcancellationCharges"]').value = this.dataset.outcancellation;
+                            document.querySelector('[name="outmisleniousCharges"]').value = this.dataset.outmisc;
+                        });
+                    });
+                });
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const editHolidayButtons = document.querySelectorAll('.edit-holiday-tariff');
+                    editHolidayButtons.forEach(button => {
+                        button.addEventListener('click', function () {
+                            document.querySelector('[name="name"]').value = this.dataset.name;
+                            document.querySelector('[name="packageName"]').value = this.dataset.packageName;
+                            document.querySelector('[name="holidayhatchback"]').value = this.dataset.holidayhatchback;
+                            document.querySelector('[name="holidayseden"]').value = this.dataset.holidayseden;
+                            document.querySelector('[name="holidaypremiumSeden"]').value = this.dataset.holidaypremiumseden;
+                            document.querySelector('[name="holidaymuv"]').value = this.dataset.holidaymuv;
+                            document.querySelector('[name="holidaysuv"]').value = this.dataset.holidaysuv;
+                            document.querySelector('[name="holidaypremiumSUV"]').value = this.dataset.holidaypremiumsuv;
+                            document.querySelector('[name="holidayacTravellar"]').value = this.dataset.holidayactravellar;
+                            document.querySelector('[name="holidaybuses"]').value = this.dataset.holidaybuses;
+                            document.querySelector('[name="holidayhatchbackWatingCharges"]').value = this.dataset.holidayhatchbackwaiting;
+                            document.querySelector('[name="holidaysedenWatingCharges"]').value = this.dataset.holidaysedenwaiting;
+                            document.querySelector('[name="holidaypremiumSedenWatingCharges"]').value = this.dataset.holidaypremiumsedenwaiting;
+                            document.querySelector('[name="holidaymuvWatingCharges"]').value = this.dataset.holidaymuvwaiting;
+                            document.querySelector('[name="holidaysuvWatingCharges"]').value = this.dataset.holidaysuvwaiting;
+                            document.querySelector('[name="holidaypremiumSUVWatingCharges"]').value = this.dataset.holidaypremiumsuvwaiting;
+                            document.querySelector('[name="holidayacTravellarWatingCharges"]').value = this.dataset.holidayactravellarwaiting;
+                            document.querySelector('[name="holidaybusesWatingCharges"]').value = this.dataset.holidaybuseswaiting;
+                            document.querySelector('[name="holidaycancellationCharges"]').value = this.dataset.holidaycancellation;
+                            document.querySelector('[name="holidaymisleniousCharges"]').value = this.dataset.holidaymisc;
+                        });
+                    });
+                });
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const editHourlyRentalButtons = document.querySelectorAll('.edit-hr-tariff');
+                    editHourlyRentalButtons.forEach(button => {
+                        button.addEventListener('click', function () {
+                            document.querySelector('[name="name"]').value = this.dataset.name;
+                            document.querySelector('[name="hours"]').value = this.dataset.hours;
+                            document.querySelector('[name="kms"]').value = this.dataset.kms;
+                            document.querySelector('[name="hrhatchback"]').value = this.dataset.hrhatchback;
+                            document.querySelector('[name="hrseden"]').value = this.dataset.hrseden;
+                            document.querySelector('[name="hrpremiumSeden"]').value = this.dataset.hrpremiumseden;
+                            document.querySelector('[name="hrmuv"]').value = this.dataset.hrmuv;
+                            document.querySelector('[name="hrsuv"]').value = this.dataset.hrsuv;
+                            document.querySelector('[name="hrpremiumSUV"]').value = this.dataset.hrpremiumsuv;
+                            document.querySelector('[name="hracTravellar"]').value = this.dataset.hractravellar;
+                            document.querySelector('[name="hrbuses"]').value = this.dataset.hrbuses;
+                            document.querySelector('[name="hrhatchbackWatingCharges"]').value = this.dataset.hrhatchbackwaiting;
+                            document.querySelector('[name="hrsedenWatingCharges"]').value = this.dataset.hrsedenwaiting;
+                            document.querySelector('[name="hrpremiumSedenWatingCharges"]').value = this.dataset.hrpremiumsedenwaiting;
+                            document.querySelector('[name="hrmuvWatingCharges"]').value = this.dataset.hrmuvwaiting;
+                            document.querySelector('[name="hrsuvWatingCharges"]').value = this.dataset.hrsuvwaiting;
+                            document.querySelector('[name="hrpremiumSUVWatingCharges"]').value = this.dataset.hrpremiumsuvwaiting;
+                            document.querySelector('[name="hracTravellarWatingCharges"]').value = this.dataset.hractravellarwaiting;
+                            document.querySelector('[name="hrbusesWatingCharges"]').value = this.dataset.hrbuseswaiting;
+                            document.querySelector('[name="extraMin"]').value = this.dataset.extraMin;
+                            document.querySelector('[name="extraKms"]').value = this.dataset.extraKms;
+                            document.querySelector('[name="hrcancellationCharges"]').value = this.dataset.hrcancellation;
+                            document.querySelector('[name="hrmisleniousCharges"]').value = this.dataset.hrmisc;
+                        });
+                    });
+                });
+            </script>
+        {% endblock content %}

@@ -1,0 +1,1056 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles & Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Header Section */
+        .header-section {
+            background-color: #55b77e;
+            padding: 30px 20px 20px;
+            color: #333;
+            position: relative;
+            z-index: 5;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-arrow {
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #333;
+            text-decoration: none;
+            flex-shrink: 0;
+            margin-right: 15px;
+        }
+
+        .page-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #333;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .list-icon {
+            margin-left: 10px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .header-section .empty-div {
+            width: 1.5em;
+            flex-shrink: 0;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #f8f8f8;
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+            margin-top: -15px;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 20px;
+        }
+
+        .main-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .sub-title {
+            font-size: 1em;
+            margin-top: 30px;
+            color: black;
+            margin-bottom: 35px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        /* Document Upload Box Styles */
+        .document-box {
+            background-color: #fcfcfc;
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #e0e0e0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .document-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .document-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Upload Area Styles */
+        .upload-area-container {
+            width: 50%;
+            min-height: 80px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-upload-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 10px 15px;
+            background-color: #f0f0f0;
+            border: 1px dashed #cccccc;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-upload-button:hover {
+            background-color: #e8e8e8;
+            border-color: #a0a0a0;
+        }
+
+        .custom-upload-button.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: scale(0.95);
+        }
+
+        .custom-upload-button .upload-icon {
+            font-size: 22px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .custom-upload-button .upload-text {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .custom-upload-button input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: scale(0.95);
+        }
+
+        .image-preview.visible {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: scale(1);
+            cursor: zoom-in;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            object-fit: contain;
+        }
+
+        .remove-image-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 4;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 5px;
+        }
+
+        .modal-title {
+            color: #333;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .modal-close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 2em;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+            padding: 5px;
+            transition: color 0.2s ease;
+        }
+
+        .modal-close-button:hover {
+            color: #333;
+        }
+
+        /* Progress Bar Styles */
+        .progress-bar-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 6px;
+            width: 85%;
+            margin: 0 auto;
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 5px;
+            border-radius: 3px;
+            background-color: #e0e0e0;
+        }
+
+        .progress-bar.active {
+            background-color: #1b8547ff;
+        }
+
+        /* Form Step Styling */
+        .form-step {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-step.active {
+            display: flex;
+        }
+
+        .form-step label {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.95em;
+            font-weight: 500;
+            color: #555;
+            position: relative;
+        }
+
+        .form-step input[type="text"],
+        .form-step input[type="date"],
+        .form-step textarea,
+        .form-step select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-top: 5px;
+            width: 100%;
+            background-color: #fff;
+        }
+
+        .form-step textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Error Message Styling */
+        .error-message {
+            color: red;
+            font-size: 0.8em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .invalid {
+            border: 2px solid red !important;
+        }
+
+        /* Button Styles */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background-color: #55b77e;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.15em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background-color: #4ca873;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Logo Styling */
+        .logo {
+            width: 100%;
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-section">
+        <a href="#" class="back-arrow" onclick="history.back()"><i class="fas fa-arrow-left"></i></a>
+        <div class="page-title">
+            Documentation<span class="list-icon"><i class="fas fa-file-alt"></i></span>
+        </div>
+        <div class="empty-div"></div>
+    </div>
+
+    <div class="main-content">
+        <img src="{% static 'driver/static/images/icon.jpeg' %}" alt="Logo" class="logo">
+        <h1 class="main-title">Update Details</h1>
+        <p class="sub-title" id="form-subtitle">Please provide your vehicle details to get started.</p>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar active" id="progress-bar-1"></div>
+            <div class="progress-bar" id="progress-bar-2"></div>
+            <div class="progress-bar" id="progress-bar-3"></div>
+            <div class="progress-bar" id="progress-bar-4"></div>
+            <div class="progress-bar" id="progress-bar-5"></div>
+        </div>
+
+        <form id="driverForm" method="post" action="{% url 'driver_slider' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Step 1: Vehicle Info -->
+            <div class="form-step active" id="step1">
+                <label>Registration Date:
+                    <input type="date" id="registrationDate" name="registrationDate" required>
+                    <span class="error-message" id="registrationDateError"></span>
+                </label>
+
+                <label>Registration Expiry Date:
+                    <input type="date" id="registrationExpiryDate" name="registrationExpiryDate" required>
+                    <span class="error-message" id="registrationExpiryDateError"></span>
+                </label>
+
+                <label>Insurance Start Date:
+                    <input type="date" id="insuranceStartDate" name="insuranceStartDate" required>
+                    <span class="error-message" id="insuranceStartDateError"></span>
+                </label>
+
+                <label>Insurance Expiry Date:
+                    <input type="date" id="insuranceExpiryDate" name="insuranceExpiryDate" required>
+                    <span class="error-message" id="insuranceExpiryDateError"></span>
+                </label>
+
+                <button type="button" class="btn" onclick="nextStep(1)">Continue</button>
+            </div>
+
+            <!-- Step 2: Vehicle Document Upload -->
+            <div class="form-step" id="step2">
+                <label>Fitness Certificate Date:
+                    <input type="date" id="fitnessCertificateDate" name="fitnessCertificateDate" required>
+                    <span class="error-message" id="fitnessCertificateDateError"></span>
+                </label>
+
+                <label>Fitness Certificate Expiry Date:
+                    <input type="date" id="fitnessCertificateExpiryDate" name="fitnessCertificateExpiryDate" required>
+                    <span class="error-message" id="fitnessCertificateExpiryDateError"></span>
+                </label>
+
+                <div class="document-box">
+                    <h2 class="document-title">Vehicle Tax Receipt</h2>
+                    <div class="upload-area-container">
+                        <label class="custom-upload-button">
+                            <i class="fas fa-upload upload-icon"></i>
+                            <span class="upload-text">Upload Picture</span>
+                            <input type="file" id="vehicleTaxReceiptUpload" name="vehicleTaxReceiptUpload"
+                                accept="image/*" required>
+                        </label>
+                        <div class="image-preview">
+                            <img src="" alt="Tax Receipt Preview">
+                            <button type="button" class="remove-image-button"
+                                data-input-id="vehicleTaxReceiptUpload">×</button>
+                        </div>
+                    </div>
+                    <span class="error-message" id="vehicleTaxReceiptUploadError"></span>
+                </div>
+
+                <div class="document-box">
+                    <h2 class="document-title">Vehicle Insurance</h2>
+                    <div class="upload-area-container">
+                        <label class="custom-upload-button">
+                            <i class="fas fa-upload upload-icon"></i>
+                            <span class="upload-text">Upload Picture</span>
+                            <input type="file" id="vehicleInsuranceUpload" name="vehicleInsuranceUpload"
+                                accept="image/*" required>
+                        </label>
+                        <div class="image-preview">
+                            <img src="" alt="Insurance Preview">
+                            <button type="button" class="remove-image-button"
+                                data-input-id="vehicleInsuranceUpload">×</button>
+                        </div>
+                    </div>
+                    <span class="error-message" id="vehicleInsuranceUploadError"></span>
+                </div>
+
+                <div class="document-box">
+                    <h2 class="document-title">Fitness Certificate</h2>
+                    <div class="upload-area-container">
+                        <label class="custom-upload-button">
+                            <i class="fas fa-upload upload-icon"></i>
+                            <span class="upload-text">Upload Picture</span>
+                            <input type="file" id="vehicleFitnessCertificateUpload"
+                                name="vehicleFitnessCertificateUpload" accept="image/*" required>
+                        </label>
+                        <div class="image-preview">
+                            <img src="" alt="Fitness Certificate Preview">
+                            <button type="button" class="remove-image-button"
+                                data-input-id="vehicleFitnessCertificateUpload">×</button>
+                        </div>
+                    </div>
+                    <span class="error-message" id="vehicleFitnessCertificateUploadError"></span>
+                </div>
+
+                <div class="document-box">
+                    <h2 class="document-title">PUC Certificate</h2>
+                    <div class="upload-area-container">
+                        <label class="custom-upload-button">
+                            <i class="fas fa-upload upload-icon"></i>
+                            <span class="upload-text">Upload Picture</span>
+                            <input type="file" id="vehiclePUCCertificateUpload" name="vehiclePUCCertificateUpload"
+                                accept="image/*" required>
+                        </label>
+                        <div class="image-preview">
+                            <img src="" alt="PUC Certificate Preview">
+                            <button type="button" class="remove-image-button"
+                                data-input-id="vehiclePUCCertificateUpload">×</button>
+                        </div>
+                    </div>
+                    <span class="error-message" id="vehiclePUCCertificateUploadError"></span>
+                </div>
+
+                <button type="button" class="btn" onclick="nextStep(2)">Continue</button>
+            </div>
+
+            <!-- Step 3: Driver Address Info -->
+            <div class="form-step" id="step3">
+                <div class="document-box">
+                    <h2 class="document-title">Driver Profile Picture</h2>
+                    <div class="upload-area-container">
+                        <label class="custom-upload-button">
+                            <i class="fas fa-upload upload-icon"></i>
+                            <span class="upload-text">Upload Picture</span>
+                            <input type="file" id="driverProfilePicture" name="driverProfilePicture" accept="image/*"
+                                required>
+                        </label>
+                        <div class="image-preview">
+                            <img src="" alt="Driver Profile Preview">
+                            <button type="button" class="remove-image-button"
+                                data-input-id="driverProfilePicture">×</button>
+                        </div>
+                    </div>
+                    <span class="error-message" id="driverProfilePictureError"></span>
+                </div>
+
+                <label>Driver Address:
+                    <textarea id="driverAddress" name="driverAddress" rows="2" required></textarea>
+                    <span class="error-message" id="driverAddressError"></span>
+                </label>
+
+                <label>Driver Pincode:
+                    <input type="text" id="driverPincode" name="driverPincode" required>
+                    <span class="error-message" id="driverPincodeError"></span>
+                </label>
+
+                <label>Driver State:
+                    <select id="driverState" name="driverState" onchange="populateCities()" required>
+                        <option value="">Select State</option>
+                    </select>
+                    <span class="error-message" id="driverStateError"></span>
+                </label>
+
+                <label>Driver City:
+                    <select id="driverCity" name="driverCity" required>
+                        <option value="">Select City</option>
+                    </select>
+                    <span class="error-message" id="driverCityError"></span>
+                </label>
+
+                <button type="button" class="btn" onclick="nextStep(3)">Continue</button>
+            </div>
+
+            <!-- Step 4: Driver Identification -->
+            <div class="form-step" id="step4">
+                <label>Driver License Number:
+                    <input type="text" id="driverLicenseNumber" name="driverLicenseNumber" required>
+                    <span class="error-message" id="driverLicenseNumberError"></span>
+                </label>
+
+                <label>Driver Aadhar Number:
+                    <input type="text" id="driverAadharNumber" name="driverAadharNumber" required>
+                    <span class="error-message" id="driverAadharNumberError"></span>
+                </label>
+
+                <div class="document-box">
+                    <h2 class="document-title">Driver License Picture</h2>
+                    <div class="upload-area-container">
+                        <label class="custom-upload-button">
+                            <i class="fas fa-upload upload-icon"></i>
+                            <span class="upload-text">Upload Picture</span>
+                            <input type="file" id="driverLicensePictureUpload" name="driverLicensePictureUpload"
+                                accept="image/*" required>
+                        </label>
+                        <div class="image-preview">
+                            <img src="" alt="License Preview">
+                            <button type="button" class="remove-image-button"
+                                data-input-id="driverLicensePictureUpload">×</button>
+                        </div>
+                    </div>
+                    <span class="error-message" id="driverLicensePictureUploadError"></span>
+                </div>
+
+                <div class="document-box">
+                    <h2 class="document-title">Driver Aadhar Picture</h2>
+                    <div class="upload-area-container">
+                        <label class="custom-upload-button">
+                            <i class="fas fa-upload upload-icon"></i>
+                            <span class="upload-text">Upload Picture</span>
+                            <input type="file" id="driverAadharPictureUpload" name="driverAadharPictureUpload"
+                                accept="image/*" required>
+                        </label>
+                        <div class="image-preview">
+                            <img src="" alt="Aadhar Preview">
+                            <button type="button" class="remove-image-button"
+                                data-input-id="driverAadharPictureUpload">×</button>
+                        </div>
+                    </div>
+                    <span class="error-message" id="driverAadharPictureUploadError"></span>
+                </div>
+
+                <button type="button" class="btn" onclick="nextStep(4)">Continue</button>
+            </div>
+
+            <!-- Step 5: Driver Bank Info -->
+            <div class="form-step" id="step5">
+                <label>Driver Bank Name:
+                    <input type="text" id="driverBankName" name="driverBankName" required>
+                    <span class="error-message" id="driverBankNameError"></span>
+                </label>
+
+                <label>Driver Account Number:
+                    <input type="text" id="driverAccountNumber" name="driverAccountNumber" required>
+                    <span class="error-message" id="driverAccountNumberError"></span>
+                </label>
+
+                <label>Driver Branch Name:
+                    <input type="text" id="driverBranchName" name="driverBranchName" required>
+                    <span class="error-message" id="driverBranchNameError"></span>
+                </label>
+
+                <label>Driver Bank IFSC Code:
+                    <input type="text" id="driverBankIFSCCode" name="driverBankIFSCCode" required>
+                    <span class="error-message" id="driverBankIFSCCodeError"></span>
+                </label>
+
+                <button type="submit" class="btn">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="imageModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button">×</button>
+            <h3 class="modal-title" id="modalImageTitle"></h3>
+            <img src="" alt="Enlarged Document" class="modal-image" id="modalImage">
+        </div>
+    </div>
+
+    <script>
+        let locationData = [];
+        const formSubtitle = document.getElementById('form-subtitle');
+        const progressBarContainers = document.querySelectorAll('.progress-bar');
+        const stepSubtitles = [
+            "Please provide your vehicle details to get started.",
+            "Upload your vehicle's necessary documents.",
+            "Provide your address information for verification.",
+            "Please upload your identification documents.",
+            "Finally, enter your bank details for payments."
+        ];
+
+        // Validation rules
+        const validationRules = {
+            registrationDate: {
+                validate: (value) => {
+                    const date = new Date(value);
+                    const today = new Date();
+                    return value && date <= today ? '' : 'Registration date must be today or in the past';
+                }
+            },
+            registrationExpiryDate: {
+                validate: (value) => {
+                    const date = new Date(value);
+                    const regDate = new Date(document.getElementById('registrationDate').value);
+                    return value && date > regDate ? '' : 'Expiry date must be after registration date';
+                }
+            },
+            insuranceStartDate: {
+                validate: (value) => {
+                    const date = new Date(value);
+                    const today = new Date();
+                    return value && date <= today ? '' : 'Insurance start date must be today or in the past';
+                }
+            },
+            insuranceExpiryDate: {
+                validate: (value) => {
+                    const date = new Date(value);
+                    const startDate = new Date(document.getElementById('insuranceStartDate').value);
+                    return value && date > startDate ? '' : 'Expiry date must be after insurance start date';
+                }
+            },
+            fitnessCertificateDate: {
+                validate: (value) => {
+                    const date = new Date(value);
+                    const today = new Date();
+                    return value && date <= today ? '' : 'Fitness certificate date must be today or in the past';
+                }
+            },
+            fitnessCertificateExpiryDate: {
+                validate: (value) => {
+                    const date = new Date(value);
+                    const certDate = new Date(document.getElementById('fitnessCertificateDate').value);
+                    return value && date > certDate ? '' : 'Expiry date must be after fitness certificate date';
+                }
+            },
+            vehicleTaxReceiptUpload: {
+                validate: (input) => input.files && input.files.length > 0 ? '' : 'Please upload a vehicle tax receipt'
+            },
+            vehicleInsuranceUpload: {
+                validate: (input) => input.files && input.files.length > 0 ? '' : 'Please upload a vehicle insurance document'
+            },
+            vehicleFitnessCertificateUpload: {
+                validate: (input) => input.files && input.files.length > 0 ? '' : 'Please upload a fitness certificate'
+            },
+            vehiclePUCCertificateUpload: {
+                validate: (input) => input.files && input.files.length > 0 ? '' : 'Please upload a PUC certificate'
+            },
+            driverProfilePicture: {
+                validate: (input) => input.files && input.files.length > 0 ? '' : 'Please upload a profile picture'
+            },
+            driverAddress: {
+                validate: (value) => value.trim().length >= 10 ? '' : 'Address must be at least 10 characters long'
+            },
+            driverPincode: {
+                validate: (value) => /^\d{6}$/.test(value) ? '' : 'Pincode must be exactly 6 digits'
+            },
+            driverState: {
+                validate: (value) => value ? '' : 'Please select a state'
+            },
+            driverCity: {
+                validate: (value) => value ? '' : 'Please select a city'
+            },
+            driverLicenseNumber: {
+                validate: (value) => /^[A-Z]{2}\d{13}$/.test(value) ? '' : 'License number must be 2 letters followed by 13 digits'
+            },
+            driverAadharNumber: {
+                validate: (value) => /^\d{12}$/.test(value) ? '' : 'Aadhar number must be exactly 12 digits'
+            },
+            driverLicensePictureUpload: {
+                validate: (input) => input.files && input.files.length > 0 ? '' : 'Please upload a driver license picture'
+            },
+            driverAadharPictureUpload: {
+                validate: (input) => input.files && input.files.length > 0 ? '' : 'Please upload an Aadhar card picture'
+            },
+            driverBankName: {
+                validate: (value) => /^[A-Za-z\s]{3,50}$/.test(value) ? '' : 'Bank name must be 3-50 letters only'
+            },
+            driverAccountNumber: {
+                validate: (value) => /^\d{9,18}$/.test(value) ? '' : 'Account number must be 9-18 digits'
+            },
+            driverBranchName: {
+                validate: (value) => /^[A-Za-z\s]{3,50}$/.test(value) ? '' : 'Branch name must be 3-50 letters only'
+            },
+            driverBankIFSCCode: {
+                validate: (value) => /^[A-Z]{4}0[A-Z0-9]{6}$/.test(value) ? '' : 'IFSC code must be 4 letters, 0, then 6 alphanumeric characters'
+            }
+        };
+
+        // Fetch location data
+        fetch('{% static "output.json" %}')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Loaded data:", data);
+                locationData = data;
+                populateStates();
+            })
+            .catch(error => {
+                console.error("Failed to load JSON:", error);
+            });
+
+        function populateStates() {
+            const stateSelect = document.getElementById('driverState');
+            stateSelect.innerHTML = '<option value="">Select State</option>';
+            const states = [...new Set(locationData.map(loc => loc.State))].sort();
+
+            states.forEach(state => {
+                const option = document.createElement('option');
+                option.value = state;
+                option.textContent = state;
+                stateSelect.appendChild(option);
+            });
+        }
+
+        function populateCities() {
+            const selectedState = document.getElementById('driverState').value;
+            const citySelect = document.getElementById('driverCity');
+            citySelect.innerHTML = '<option value="">Select City</option>';
+
+            const filteredCities = locationData
+                .filter(loc => loc.State === selectedState)
+                .map(loc => loc.City);
+
+            const uniqueCities = [...new Set(filteredCities)].sort();
+
+            uniqueCities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+        }
+
+        function updateProgressBar(currentStep) {
+            progressBarContainers.forEach((bar, index) => {
+                if (index < currentStep) {
+                    bar.classList.add('active');
+                } else {
+                    bar.classList.remove('active');
+                }
+            });
+        }
+
+        function updateFormContent(currentStep) {
+            formSubtitle.textContent = stepSubtitles[currentStep - 1];
+        }
+
+        function showError(input, message) {
+            const errorElement = document.getElementById(`${input.id}Error`);
+            if (message) {
+                errorElement.textContent = message;
+                errorElement.classList.add('active');
+                input.classList.add('invalid');
+            } else {
+                errorElement.textContent = '';
+                errorElement.classList.remove('active');
+                input.classList.remove('invalid');
+            }
+        }
+
+        function validateInput(input) {
+            const rule = validationRules[input.id];
+            if (rule) {
+                const value = input.type === 'file' ? input : input.value;
+                const errorMessage = rule.validate(value);
+                showError(input, errorMessage);
+                return !errorMessage;
+            }
+            return true;
+        }
+
+        function nextStep(currentStep) {
+            const currentFormStep = document.getElementById('step' + currentStep);
+            const nextFormStep = document.getElementById('step' + (currentStep + 1));
+
+            // Validate all inputs in the current step
+            let isValid = true;
+            currentFormStep.querySelectorAll('[required]').forEach(input => {
+                if (!validateInput(input)) {
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                alert('Please correct the errors in the form before continuing.');
+                return;
+            }
+
+            currentFormStep.classList.remove('active');
+            if (nextFormStep) {
+                nextFormStep.classList.add('active');
+                updateProgressBar(currentStep + 1);
+                updateFormContent(currentStep + 1);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const imageModal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalImageTitle = document.getElementById('modalImageTitle');
+            const modalCloseButton = imageModal.querySelector('.modal-close-button');
+
+            // Function to open the modal
+            const openModal = (src, title) => {
+                modalImage.src = src;
+                modalImageTitle.textContent = title;
+                imageModal.classList.add('active');
+            };
+
+            // Function to close the modal
+            const closeModal = () => {
+                imageModal.classList.remove('active');
+                modalImage.src = '';
+                modalImageTitle.textContent = '';
+            };
+
+            // Event listeners for modal
+            modalCloseButton.addEventListener('click', closeModal);
+            imageModal.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    closeModal();
+                }
+            });
+
+            // Function to handle file input changes and display image preview
+            const setupImageUploadToggle = (inputElement) => {
+                const documentBox = inputElement.closest('.document-box');
+                if (!documentBox) return;
+                const uploadButton = documentBox.querySelector('.custom-upload-button');
+                const textSpan = uploadButton.querySelector('.upload-text');
+                const imagePreview = documentBox.querySelector('.image-preview');
+                const imgElement = imagePreview.querySelector('img');
+                const removeButton = imagePreview.querySelector('.remove-image-button');
+                const documentTitle = documentBox.querySelector('.document-title').textContent;
+
+                const showImagePreview = (src) => {
+                    imgElement.src = src;
+                    uploadButton.classList.add('hidden');
+                    imagePreview.classList.add('visible');
+                };
+
+                const hideImagePreview = () => {
+                    imgElement.src = '';
+                    uploadButton.classList.remove('hidden');
+                    imagePreview.classList.remove('visible');
+                    textSpan.textContent = 'Upload Picture';
+                    validateInput(inputElement);
+                };
+
+                inputElement.addEventListener('change', function () {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            showImagePreview(e.target.result);
+                            textSpan.textContent = this.files[0].name;
+                            validateInput(this);
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    } else {
+                        hideImagePreview();
+                    }
+                });
+
+                removeButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    inputElement.value = '';
+                    hideImagePreview();
+                });
+
+                imagePreview.addEventListener('click', () => {
+                    if (imgElement.src) {
+                        openModal(imgElement.src, documentTitle);
+                    }
+                });
+            };
+
+            // Apply setup to all file inputs
+            document.querySelectorAll('.custom-upload-button input[type="file"]').forEach(input => {
+                setupImageUploadToggle(input);
+            });
+
+            // Add real-time validation for all inputs
+            document.querySelectorAll('input, textarea, select').forEach(input => {
+                if (input.type === 'file') {
+                    input.addEventListener('change', () => validateInput(input));
+                } else {
+                    input.addEventListener('input', () => validateInput(input));
+                    input.addEventListener('change', () => validateInput(input));
+                }
+            });
+
+            // Initialize form content
+            updateFormContent(1);
+        });
+
+        {% for message in messages %}
+        <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+        {% if message.tags == 'success' %}
+        <script>
+            var m = "{{ message }}";
+            swal("Success !", m, 'success');
+        </script>
+        {% elif message.tags == 'danger' %}
+        <script>
+            var m = "{{ message }}";
+            swal("Error !", m, 'error');
+        </script>
+        {% elif message.tags == 'info' %}
+        <script>
+            var m = "{{ message }}";
+            swal("Alert !", m, 'info');
+        </script>
+        {% endif %}
+        {% endfor %}
+    </script>
+</body>
+
+</html>

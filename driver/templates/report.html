@@ -1,0 +1,416 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Trip Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Global Styles & Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            /* Remove tap highlight on mobile devices */
+        }
+
+        body {
+            font-family: 'Inter', 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            /* Light grey background */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+            padding-bottom: 70px;
+            /* Space for fixed navbar */
+        }
+
+        /* Header Section */
+        .header-section {
+            background-color: #55b77e;
+            /* Primary Green background */
+            padding: 30px 20px 20px;
+            color: #333;
+            position: relative;
+            z-index: 5;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-arrow {
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #333;
+            text-decoration: none;
+            flex-shrink: 0;
+            margin-right: 15px;
+            transition: background-color 0.1s ease-out;
+        }
+
+        .page-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #333;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .report-icon {
+            margin-left: 10px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .header-section .empty-div {
+            width: 1.5em;
+            flex-shrink: 0;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #f8f8f8;
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Report Period Selection Section */
+        .report-period-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .report-period-section label {
+            display: block;
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        /* Styling for the dropdown (select) field */
+        .report-period-section select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            color: #333;
+            outline: none;
+            transition: border-color 0.3s ease, background-color 0.1s ease-out;
+            margin-bottom: 15px;
+            /* Custom arrow for dropdown */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23777%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-6.5%200-12.3%203.2-16%208.7-3.7%205.5-3.3%2012.3.8%2017.6l139%20139.3c3.7%203.7%209.2%205.6%2014.8%205.6s11.1-1.9%2014.8-5.6l139-139.3c4.1-5.3%204.5-12.1.9-17.6z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 12px;
+            background-color: #fff;
+            /* Ensure white background for dropdown */
+            cursor: pointer;
+        }
+
+        .report-period-section select:focus {
+            border-color: #55b77e;
+            /* Green border on focus */
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .report-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            text-align: center;
+            /* Ensure text is centered for both button and link */
+            text-decoration: none;
+            /* Remove underline for the anchor tag */
+            display: inline-block;
+            /* Treat anchor tag as a block for padding/sizing */
+        }
+
+        .show-button {
+            background-color: #55b77e;
+            /* Green for show */
+            color: white;
+        }
+
+        .show-button:hover {
+            background-color: #4a9e6c;
+            transform: translateY(-1px);
+        }
+
+        .download-button {
+            background-color: #007bff;
+            /* Blue for download */
+            color: white;
+        }
+
+        .download-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        /* Reports List Section */
+        .reports-list-section {
+            margin-top: 25px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .reports-list {
+            list-style: none;
+            padding: 0;
+            border-radius: 15px;
+        }
+
+        .report-item {
+            display: flex;
+            flex-direction: column;
+            padding: 15px 20px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+            position: relative;
+            border-bottom: 8px solid #28a745;
+            /* Green border for completed reports */
+            transition: background-color 0.1s ease-out;
+        }
+
+        .report-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .report-detail {
+            font-size: 0.95em;
+            color: #333;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .report-detail:last-child {
+            margin-bottom: 0;
+            /* No margin for the last detail in an item */
+        }
+
+        .report-detail strong {
+            font-weight: 600;
+            color: #333;
+            margin-right: 5px;
+        }
+
+        .report-detail .detail-icon {
+            font-size: 1.1em;
+            margin-right: 8px;
+            color: #55b77e;
+            /* Green for detail icons */
+            width: 1.1em;
+            text-align: center;
+        }
+
+        .no-data-message {
+            text-align: center;
+            color: #777;
+            padding: 30px 0;
+            font-size: 1.1em;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Navigation Bar (Bottom) */
+        .nav-bar {
+            background-color: #55b77e;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 10;
+            font-family: 'Inter', 'Arial', sans-serif;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: color 0.3s ease, background-color 0.1s ease-out;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item.active {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .nav-item .icon {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        /* Click Visualization Effects */
+        .back-arrow:active,
+        .nav-item:active,
+        .report-period-section select:active,
+        .report-button:active,
+        .report-item:active {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Responsive Adjustments */
+        @media (min-width: 768px) {
+
+            .header-section,
+            .main-content {
+                padding-left: 40px;
+                padding-right: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            .header-section,
+            .main-content {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-section">
+        <a href="{% url 'settings' %}" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+        <div class="page-title">
+            Trip Report <span class="report-icon"><i class="fas fa-chart-bar"></i></span>
+        </div>
+        <div class="empty-div"></div>
+    </div>
+
+    <div class="main-content">
+        <div class="report-period-section">
+            <form method="post" action="{% url 'report' %}" id="reportForm">
+                {% csrf_token %}
+                <label for="month_range">Select Period:</label>
+                <select name="month_range" id="month_range" required>
+                    <option value="0.5" {% if selected_month_range == 0.5 %}selected{% endif %}>Last 15 Days</option>
+                    <option value="1" {% if selected_month_range == 1 %}selected{% endif %}>Last 1 Month</option>
+                    <option value="3" {% if selected_month_range == 3 %}selected{% endif %}>Last 3 Months</option>
+                    <option value="6" {% if selected_month_range == 6 %}selected{% endif %}>Last 6 Months</option>
+                    <option value="12" {% if selected_month_range == 12 %}selected{% endif %}>Last 1 Year</option>
+                </select>
+                <div class="button-group">
+                    <button type="submit" class="report-button show-button"><i class="fas fa-eye"></i> Show Report</button>
+                    <a href="{% url 'download_report' %}?month_range={{ selected_month_range|default:'0.5' }}" class="report-button download-button" id="downloadPdfLink"><i class="fas fa-download"></i> Download PDF</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="reports-list-section">
+            <h2 class="section-title">Completed Trip Details</h2>
+            <ul class="reports-list" id="reports-list">
+                {% if completed_trips %}
+                {% for trip in completed_trips %}
+                <li class="report-item">
+                    <div class="report-detail"><span class="detail-icon"><i class="fas fa-calendar-alt"></i></span> <strong>Date:</strong> {{ trip.date|date:"d M Y" }}</div>
+                    <div class="report-detail"><span class="detail-icon location-icon"><i class="fas fa-map-marker-alt"></i></span> <strong>From:</strong> {{ trip.from_city }}</div>
+                    <div class="report-detail"><span class="detail-icon location-icon"><i class="fa-solid fa-map-pin"></i></span> <strong>To:</strong> {{ trip.to_city }}</div>
+                    <!-- <div class="report-detail"><span class="detail-icon"><i class="fas fa-rupee-sign"></i></span> <strong>Total Amount:</strong> ₹{{ trip.total_amount }}</div>
+                    <div class="report-detail"><span class="detail-icon"><i class="fas fa-money-bill-wave"></i></span> <strong>Vansat Commission:</strong> ₹{{ trip.vansat_commission|default:"0.00" }}</div> -->
+                    <div class="report-detail"><span class="detail-icon"><i class="fas fa-user-tie"></i></span> <strong>Total Amount:</strong> ₹{{ trip.driver_commission|default:"0.00" }}</div>
+                </li>
+                {% endfor %}
+                {% else %}
+                <li class="no-data-message">No completed trip data available for the selected period.</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <a href="{% url 'mobileapp' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-home"></i></span> <span><b>Home</b></span>
+        </a>
+        <a href="{% url 'notifications' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-bell"></i></span> <span><b>Alerts</b></span>
+        </a>
+        <a href="{% url 'alltrips' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-map-marked-alt"></i></span> <span><b>Trips</b></span>
+        </a>
+        <a href="{% url 'settings' %}" class="nav-item active">
+            <span class="icon"><i class="fas fa-cog"></i></span> <span><b>Settings</b></span>
+        </a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const monthRangeSelect = document.getElementById('month_range');
+            const downloadPdfLink = document.getElementById('downloadPdfLink');
+
+            // Function to update the download link
+            function updateDownloadLink() {
+                const selectedValue = monthRangeSelect.value;
+                downloadPdfLink.href = `{% url 'download_report' %}?month_range=${selectedValue}`;
+            }
+
+            // Update link when the page loads (to ensure it reflects the initial selected value)
+            updateDownloadLink();
+
+            // Add an event listener to update the download link when the select value changes
+            monthRangeSelect.addEventListener('change', updateDownloadLink);
+        });
+    </script>
+</body>
+
+</html>

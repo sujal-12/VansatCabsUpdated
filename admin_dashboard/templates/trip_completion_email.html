@@ -1,0 +1,231 @@
+{% load static %}  {# <--- Keep this at the very top #}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Completed! - Booking ID: {{ trip.booking_id }}</title>
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Container for the email content */
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Header Section */
+        .header {
+            background-color: #0056b3; /* Primary brand color */
+            padding: 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .header img {
+            max-width: 150px; /* Adjust logo size as needed */
+            height: auto;
+            margin-bottom: 10px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        /* Content Section */
+        .content {
+            padding: 30px;
+        }
+        h2 {
+            color: #0056b3;
+            font-size: 22px;
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h3 {
+            color: #0056b3;
+            font-size: 18px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+
+        /* Table Styling */
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .details-table th, .details-table td {
+            border: 1px solid #e0e0e0;
+            padding: 10px 15px;
+            text-align: left;
+            vertical-align: top;
+        }
+        .details-table th {
+            background-color: #f0f8ff; /* Light blue background for headers */
+            font-weight: bold;
+            color: #555;
+            width: 35%; /* Adjust as needed */
+        }
+        .details-table td {
+            background-color: #ffffff;
+        }
+
+        /* Total Amount Section */
+        .total-section {
+            background-color: #f9f9f9;
+            padding: 15px 30px;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            text-align: right;
+            border-radius: 0 0 8px 8px;
+        }
+        .total-section strong {
+            font-size: 1.4em;
+            color: #0056b3;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px 30px;
+            font-size: 12px;
+            color: #777;
+            background-color: #e2e2e2; /* Light grey footer */
+            border-top: 1px solid #ddd;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .footer a {
+            color: #0056b3;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <!-- {# Corrected: Remove the redundant 'static/' from the path provided to {% static %} #}
+            {# Assuming 'admin_dashboard' is the name of your app and the image is in its 'static/images/' folder #}
+            <img src="{{ SITE_DOMAIN }}{% static 'admin_dashboard/images/vansat_bg_logo_black.png' %}" alt="VansatCabs"> -->
+            <h1>Trip Invoice</h1>
+        </div>
+
+        <div class="content">
+            <h2>Your Trip is Completed!</h2>
+            <p>Dear <strong>{{ trip.passenger_name }}</strong>,</p>
+            <p>We are pleased to inform you that your trip with Booking ID <strong>{{ trip.booking_id }}</strong> from <strong>{{ trip.from_city }}</strong> to <strong>{{ trip.to_city }}</strong> has been successfully completed. We hope you had a safe and comfortable journey with us.</p>
+            
+            <h3>Trip Summary:</h3>
+            <table class="details-table">
+                <tr>
+                    <th>Booking ID:</th>
+                    <td>{{ trip.booking_id }}</td>
+                </tr>
+                <tr>
+                    <th>Date & Time:</th>
+                    <td>{{ trip.date|date:"F j, Y" }} at {{ trip.time|time:"h:i A" }}</td>
+                </tr>
+                <tr>
+                    <th>From Location:</th>
+                    <td>{{ trip.from_city }}</td>
+                </tr>
+                <tr>
+                    <th>To Location:</th>
+                    <td>{{ trip.to_city }}</td>
+                </tr>
+                <tr>
+                    <th>Vehicle Type:</th>
+                    <td>{{ trip.vehicle_type }}</td>
+                </tr>
+                <tr>
+                    <th>Driver Name:</th>
+                    <td>{{ trip.driver_name }}</td>
+                </tr>
+                <tr>
+                    <th>Vehicle Number:</th>
+                    <td>{{ trip.vehicle_number }}</td>
+                </tr>
+                <tr>
+                    <th>Driver Contact:</th>
+                    <td>{{ trip.driver_contact }}</td>
+                </tr>
+            </table>
+
+            <h3>Payment & Charges:</h3>
+            <table class="details-table">
+                <tr>
+                    <th>Base Fare:</th>
+                    <td>₹{{ trip.base_fare }}</td>
+                </tr>
+                <tr>
+                    <th>Discount:</th>
+                    <td>₹{{ trip.discount }}</td>
+                </tr>
+                <tr>
+                    <th>Terminal Charges:</th>
+                    <td>₹{{ trip.terminal_charges }}</td>
+                </tr>
+                <tr>
+                    <th>Surcharges:</th>
+                    <td>₹{{ trip.surcharges }}</td>
+                </tr>
+                <tr>
+                    <th>Taxes:</th>
+                    <td>{{ trip.taxes }}</td>
+                </tr>
+                {% if extra_charges_display %} {# Corrected to use extra_charges_display from context #}
+                    <tr>
+                        <td colspan="2" style="background-color: #f0f0f0; font-weight: bold;">Additional Charges Breakdown:</td>
+                    </tr>
+                    {% for key, value in extra_charges_display.items %}
+                        <tr>
+                            <th>{{ key }}:</th>
+                            <td>₹{{ value }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                {% if trip.extra_total %}
+                    <tr>
+                        <th>Extra Total:</th>
+                        <td>₹{{ trip.extra_total }}</td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <th>Payment Type:</th>
+                    <td>{{ trip.payment_type }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="total-section">
+            Final Amount Paid: <strong>₹{{ trip.total_amount }}</strong>
+        </div>
+
+        <div class="footer">
+            <p>Thank you for choosing our services. We look forward to serving you again!</p>
+            <p>VansatCabs </p>
+            <p>4229, Sardar Chowk, Panchavati, Nashik - 422003.</p>
+            <p>Call: +91-7507400025 | Mail: pushkar.sgavali@gmail.com</p>
+        </div>
+    </div>
+</body>
+</html>

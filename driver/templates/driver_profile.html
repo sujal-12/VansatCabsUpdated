@@ -1,0 +1,389 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+            padding-bottom: 70px;
+        }
+
+        .header-section {
+            background-color: #55b77e;
+            padding: 30px 20px 20px;
+            color: #333;
+            position: relative;
+            z-index: 5;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-arrow {
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #333;
+            text-decoration: none;
+            flex-shrink: 0;
+            margin-right: 15px;
+            transition: background-color 0.1s ease-out;
+        }
+
+        .page-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #333;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 10px;
+        }
+
+        .page-title .profile-name-icon {
+            font-size: 1.4em;
+            color: #333;
+        }
+
+        .header-section .empty-div {
+            width: 1.5em;
+            flex-shrink: 0;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #f8f8f8;
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            padding-top: 70px;
+        }
+
+        .profile-avatar {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 3px solid #55b77e;
+        }
+
+        .settings-card {
+            background-color: #fff;
+            padding: 70px 20px 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group .value {
+            font-size: 1em;
+            color: #333;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .form-group img {
+            max-width: 120px;
+            border-radius: 8px;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+
+        .form-group .name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .form-group .location {
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-bar {
+            background-color: #55b77e;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 10;
+            font-family: 'Inter', 'Arial', sans-serif;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item.active {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .nav-item .icon {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .back-arrow:active,
+        .nav-item:active {
+            background-color: rgba(0, 0, 0, 0.05);
+            transition: background-color 0.1s ease-out;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            color: #fff;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: #ddd;
+        }
+
+        @media (min-width: 768px) {
+            .header-section, .main-content {
+                padding-left: 40px;
+                padding-right: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-section, .main-content {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <a href="{% url 'settings' %}" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+        <div class="page-title">
+            Profile <span class="profile-name-icon"><i class="fas fa-user-circle"></i></span>
+        </div>
+        <div class="empty-div"></div>
+    </div>
+
+    <div class="main-content">
+        <div class="profile-avatar" style="background-image: url('{% if driver.profile_picture %}{{ driver.profile_picture.url }}{% else %}{% static 'driver/static/images/Untitled_design.jpg' %}{% endif %}');"></div>
+
+        <div class="settings-card">
+            <div class="form-group">
+                <div class="name">{{ driver.driverfirstname }} {{ driver.driverlastname }}</div>
+                <div class="location">{{ driver.driveraddress|default:"Location not set" }}</div>
+            </div>
+            <div class="form-group">
+                <label for="mobile">Mobile</label>
+                <div class="value">{{ driver.drivermobileno }}</div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="value">{{ driver.driverpassword }}</div>
+            </div>
+            <div class="form-group">
+                <label for="pincode">Pincode</label>
+                <div class="value">{{ driver.driverpincode }}</div>
+            </div>
+            <div class="form-group">
+                <label for="state">State</label>
+                <div class="value">{{ driver.driverstate }}</div>
+            </div>
+            <div class="form-group">
+                <label for="city">City</label>
+                <div class="value">{{ driver.drivercity }}</div>
+            </div>
+            <div class="form-group">
+                <label for="license_number">License No</label>
+                <div class="value">{{ driver.driverlicense_number }}</div>
+            </div>
+            <div class="form-group">
+                <label for="aadhar_number">Aadhar Number</label>
+                <div class="value">{{ driver.driver_aadhar_number }}</div>
+            </div>
+            <div class="form-group">
+                <label for="bank_name">Bank Name</label>
+                <div class="value">{{ driver.driverbank_name }}</div>
+            </div>
+            <div class="form-group">
+                <label for="account_number">Account Number</label>
+                <div class="value">{{ driver.driveraccount_number }}</div>
+            </div>
+            <div class="form-group">
+                <label for="branch_name">Branch Name</label>
+                <div class="value">{{ driver.driverbranch_name }}</div>
+            </div>
+            <div class="form-group">
+                <label for="ifsc_code">IFSC Code</label>
+                <div class="value">{{ driver.driverifsc_code }}</div>
+            </div>
+            <div class="form-group">
+                <label for="license_picture">License Picture</label>
+                <div class="value">
+                    {% if driver.license_picture %}
+                        <img src="{{ driver.license_picture.url }}" alt="License Picture" width="120" onclick="openModal('{{ driver.license_picture.url }}')" />
+                    {% else %}
+                        No License Picture Provided
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="aadhar_picture">Aadhar Picture</label>
+                <div class="value">
+                    {% if driver.aadhar_picture %}
+                        <img src="{{ driver.aadhar_picture.url }}" alt="Aadhar Picture" width="120" onclick="openModal('{{ driver.aadhar_picture.url }}')" />
+                    {% else %}
+                        No Aadhar Picture Provided
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="approval_status">Approval Status</label>
+                <div class="value">{{ driver.is_approved|yesno:"Approved,Not Approved" }}</div>
+            </div>
+            <div class="form-group">
+                <label for="profile_completion">Profile Completion</label>
+                <div class="value">{{ driver.is_profile_complete|yesno:"Complete,Incomplete" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Image Viewing -->
+    <div id="imageModal" class="modal">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="Full Size Image">
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <a href="{% url 'mobileapp' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-home"></i></span> <span><b>Home</b></span>
+        </a>
+        <a href="{% url 'notifications' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-bell"></i></span> <span><b>Alerts</b></span>
+        </a>
+        <a href="{% url 'alltrips' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-map-marked-alt"></i></span> <span><b>Trips</b></span>
+        </a>
+        <a href="{% url 'settings' %}" class="nav-item active">
+            <span class="icon"><i class="fas fa-cog"></i></span> <span><b>Settings</b></span>
+        </a>
+    </div>
+
+    <script>
+        function openModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'flex';
+            modalImg.src = imageSrc;
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+
+        // Close modal when clicking outside the image
+        document.getElementById('imageModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

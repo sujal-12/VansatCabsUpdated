@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Edit Driver - {{ node.nodeCity }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid page-body-wrapper">
+    {% include "sidebar.html" %}
+    <div class="main-panel w-100">
+        <div class="content-wrapper">
+            <div class="row mt-5">
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h3 class="text-primary fw-bold mb-4">
+                                Edit Driver - {{ driver.driverfirstname }} {{ driver.driverlastname }}
+                            </h3>
+
+                            <form method="POST" enctype="multipart/form-data" class="row g-3">
+                                {% csrf_token %}
+
+                                <!-- Section 1: Personal Details -->
+                                <h5 class="text-secondary mt-3">Driver Personal Details</h5>
+                                <hr>
+                                <div class="col-md-6">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" class="form-control" name="driverfirstname" value="{{ driver.driverfirstname }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" name="driverlastname" value="{{ driver.driverlastname }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Mobile No</label>
+                                    <input type="text" class="form-control" name="drivermobileno" value="{{ driver.drivermobileno }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Password</label>
+                                    <input type="text" class="form-control" name="driverpassword" value="{{ driver.driverpassword }}" required>
+                                </div>
+
+                                <!-- Section 2: Address & Identity -->
+                                <h5 class="text-secondary mt-4">Address & Identity</h5>
+                                <hr>
+                                <div class="col-md-12">
+                                    <label class="form-label">Address</label>
+                                    <textarea class="form-control" name="driveraddress" required>{{ driver.driveraddress }}</textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Pincode</label>
+                                    <input type="text" class="form-control" name="driverpincode" value="{{ driver.driverpincode }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">State</label>
+                                    <input type="text" class="form-control" name="driverstate" value="{{ driver.driverstate }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">City</label>
+                                    <input type="text" class="form-control" name="drivercity" value="{{ driver.drivercity }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">License Number</label>
+                                    <input type="text" class="form-control" name="driverlicense_number" value="{{ driver.driverlicense_number }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Aadhar Number</label>
+                                    <input type="text" class="form-control" name="driver_aadhar_number" value="{{ driver.driver_aadhar_number }}">
+                                </div>
+
+                                <!-- Section 3: Bank Details -->
+                                <h5 class="text-secondary mt-4">Bank Details</h5>
+                                <hr>
+                                <div class="col-md-6">
+                                    <label class="form-label">Bank Name</label>
+                                    <input type="text" class="form-control" name="driverbank_name" value="{{ driver.driverbank_name }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Account Number</label>
+                                    <input type="text" class="form-control" name="driveraccount_number" value="{{ driver.driveraccount_number }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Branch Name</label>
+                                    <input type="text" class="form-control" name="driverbranch_name" value="{{ driver.driverbranch_name }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">IFSC Code</label>
+                                    <input type="text" class="form-control" name="driverifsc_code" value="{{ driver.driverifsc_code }}">
+                                </div>
+
+                                <!-- Section 4: Vehicle Details -->
+                                <h5 class="text-secondary mt-4">Vehicle Details</h5>
+                                <hr>
+                                <div class="col-md-4">
+                                    <label class="form-label">Vehicle Type</label>
+                                    <select name="vehicletype" required class="form-select">
+                                        <option value="">Vehicle Type</option>
+                                        {% for type in vehicle_types %}
+                                            <option value="{{ type }}" {% if driver.vehicletype == type %}selected{% endif %}>{{ type|capfirst }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Vehicle Number</label>
+                                    <input type="text" class="form-control" name="vehicle_number" value="{{ driver.vehicle_number }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Vehicle Name</label>
+                                    <input type="text" class="form-control" name="vehicle_name" value="{{ driver.vehicle_name }}">
+                                </div>
+
+                                <!-- Section 5: Vehicle Document Dates -->
+                                <h5 class="text-secondary mt-4">Vehicle Document Dates</h5>
+                                <hr>
+                                <div class="col-md-4">
+                                    <label class="form-label">Registration Date</label>
+                                    <input type="date" class="form-control" name="registration_date" value="{{ driver.registration_date|date:'Y-m-d' }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Registration Expiry</label>
+                                    <input type="date" class="form-control" name="registration_expiry_date" value="{{ driver.registration_expiry_date|date:'Y-m-d' }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Insurance Start Date</label>
+                                    <input type="date" class="form-control" name="insurance_start_date" value="{{ driver.insurance_start_date|date:'Y-m-d' }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Insurance Expiry</label>
+                                    <input type="date" class="form-control" name="insurance_expiry_date" value="{{ driver.insurance_expiry_date|date:'Y-m-d' }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Fitness Certificate Date</label>
+                                    <input type="date" class="form-control" name="fitness_certificate_date" value="{{ driver.fitness_certificate_date|date:'Y-m-d' }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Fitness Expiry Date</label>
+                                    <input type="date" class="form-control" name="fitness_certificate_expiry_date" value="{{ driver.fitness_certificate_expiry_date|date:'Y-m-d' }}">
+                                </div>
+
+                                <!-- Section 6: Upload Documents -->
+                                <h5 class="text-secondary mt-4">Upload Documents</h5>
+                                <hr>
+                                <div class="col-md-4">
+                                    <label class="form-label">Profile Picture</label>
+                                    <input type="file" class="form-control" name="profile_picture">
+                                    {% if driver.profile_picture %}
+                                        <img src="{{ driver.profile_picture.url }}" width="100" class="mt-2">
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">License Picture</label>
+                                    <input type="file" class="form-control" name="license_picture">
+                                    {% if driver.license_picture %}
+                                        <img src="{{ driver.license_picture.url }}" width="100" class="mt-2">
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Aadhar Picture</label>
+                                    <input type="file" class="form-control" name="aadhar_picture">
+                                    {% if driver.aadhar_picture %}
+                                        <img src="{{ driver.aadhar_picture.url }}" width="100" class="mt-2">
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Vehicle Insurance</label>
+                                    <input type="file" class="form-control" name="vehicle_insurance">
+                                    {% if driver.vehicle_insurance %}
+                                        <img src="{{ driver.vehicle_insurance.url }}" width="100" class="mt-2">
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tax Receipt</label>
+                                    <input type="file" class="form-control" name="vehicle_tax_receipt">
+                                    {% if driver.vehicle_tax_receipt %}
+                                        <img src="{{ driver.vehicle_tax_receipt.url }}" width="100" class="mt-2">
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Fitness Certificate</label>
+                                    <input type="file" class="form-control" name="fitness_certificate">
+                                    {% if driver.fitness_certificate %}
+                                        <img src="{{ driver.fitness_certificate.url }}" width="100" class="mt-2">
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">PUC Certificate</label>
+                                    <input type="file" class="form-control" name="puc_certificate">
+                                    {% if driver.puc_certificate %}
+                                        <img src="{{ driver.puc_certificate.url }}" width="100" class="mt-2">
+                                    {% endif %}
+                                </div>
+
+                                <!-- Section 7: Actions -->
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-success">Update Driver</button>
+                                    <a href="{% url 'view_driver' node.nodeID driver.id %}" class="btn btn-secondary">Cancel</a>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

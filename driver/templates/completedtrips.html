@@ -1,0 +1,376 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completed Trips</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+            padding-bottom: 70px;
+        }
+
+        .header-section {
+            background-color: #55b77e;
+            padding: 30px 20px 20px;
+            color: #333;
+            position: relative;
+            z-index: 5;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-arrow {
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #333;
+            text-decoration: none;
+            flex-shrink: 0;
+            margin-right: 15px;
+            transition: background-color 0.1s ease-out;
+        }
+
+        .page-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #333;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .list-icon {
+            margin-left: 10px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .header-section .empty-div {
+            width: 1.5em;
+            flex-shrink: 0;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #f8f8f8;
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .date-picker-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .date-picker-section label {
+            display: block;
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .date-picker-section input[type="date"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            color: #333;
+            outline: none;
+            transition: border-color 0.3s ease, background-color 0.1s ease-out;
+        }
+
+        .date-picker-section input[type="date"]:focus {
+            border-color: #55b77e;
+        }
+
+        .trips-list-section {
+            margin-top: 25px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .trips-list {
+            list-style: none;
+            padding: 0;
+            border-radius: 15px;
+        }
+
+        .trip-item {
+            display: flex;
+            flex-direction: column;
+            padding: 15px 20px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            position: relative;
+            border-bottom: 8px solid #28a745;
+            transition: background-color 0.1s ease-out;
+        }
+
+        .trip-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .trip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .trip-date-time {
+            font-size: 0.9em;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .trip-amount {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .trip-driver-name {
+            font-size: 0.95em;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+
+        .trip-locations {
+            font-size: 0.9em;
+            color: #777;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .location-point {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .location-point:last-child {
+            margin-bottom: 0;
+        }
+
+        .location-icon {
+            font-size: 1.2em;
+            margin-right: 8px;
+            color: #55b77e;
+            width: 1em;
+            text-align: center;
+        }
+
+        .location-point strong {
+            font-weight: 600;
+            color: #333;
+            margin-right: 5px;
+        }
+
+        /* New style for the total field */
+        .total-field {
+            display: flex;
+            align-items: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 10px; /* Add some space from the locations */
+            padding-top: 10px;
+            border-top: 1px dashed #e0e0e0;
+        }
+
+        .total-field .total-icon {
+            font-size: 1.2em;
+            margin-right: 8px;
+            color: #28a745;
+            width: 1em;
+            text-align: center;
+        }
+
+        .total-field strong {
+            color: #333;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .no-trips-message {
+            text-align: center;
+            font-size: 1em;
+            color: #777;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .nav-bar {
+            background-color: #55b77e;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 10;
+            font-family: 'Inter', 'Arial', sans-serif;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: color 0.3s ease, background-color 0.1s ease-out;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item.active {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .nav-item .icon {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .back-arrow:active,
+        .nav-item:active,
+        .date-picker-section input[type="date"]:active,
+        .trip-item:active {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        @media (min-width: 768px) {
+            .header-section, .main-content {
+                padding-left: 40px;
+                padding-right: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-section, .main-content {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <a href="{% url 'settings' %}" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+        <div class="page-title">
+            Completed Trips <span class="list-icon"><i class="fas fa-check-circle"></i></span>
+        </div>
+        <div class="empty-div"></div>
+    </div>
+
+    <div class="main-content">
+        <div class="date-picker-section">
+            <label for="trip-date">Select Date:</label>
+            <form method="get" id="filterForm">
+                <input
+                    type="date"
+                    id="trip-date"
+                    name="date"
+                    value="{{ request.GET.date }}"
+                    onchange="document.getElementById('filterForm').submit();"
+                >
+            </form>
+        </div>
+
+        <div class="trips-list-section">
+            <h2 class="section-title">Trips for Selected Date</h2>
+            {% if completed_trips %}
+                <ul class="trips-list">
+                    {% for trip in completed_trips %}
+                        <li class="trip-item">
+                            <div class="trip-header">
+                                <span class="trip-date-time">{{ trip.date }}</span>
+                                <span class="trip-amount">Completed</span>
+                            </div>
+                            <div class="trip-driver-name">Customer: {{ trip.passenger_name }}</div>
+                            <div class="trip-locations">
+                                <span class="location-point">
+                                    <span class="location-icon"><i class="fas fa-map-marker-alt"></i></span> <strong>From:</strong> {{ trip.from_city }}
+                                </span>
+                                <span class="location-point">
+                                    <span class="location-icon"><i class="fa-solid fa-map-pin"></i></span> <strong>To:</strong> {{ trip.to_city }}
+                                </span>
+                                <span class="total-field">
+                                    <span class="total-icon"><i class="fa-solid fa-indian-rupee-sign"></i></span> <strong>Total:</strong> ₹{{ trip.driver_commission|floatformat:2 }}
+                                </span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="no-trips-message">
+                    No completed trips found.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <a href="{% url 'mobileapp' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-home"></i></span> <span><b>Home</b></span>
+        </a>
+        <a href="{% url 'notifications' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-bell"></i></span> <span><b>Alerts</b></span>
+        </a>
+        <a href="{% url 'alltrips' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-map-marked-alt"></i></span> <span><b>Trips</b></span>
+        </a>
+        <a href="{% url 'settings' %}" class="nav-item active">
+            <span class="icon"><i class="fas fa-cog"></i></span> <span><b>Settings</b></span>
+        </a>
+    </div>
+</body>
+</html>

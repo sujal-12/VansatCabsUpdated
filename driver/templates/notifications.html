@@ -1,0 +1,338 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Global Styles & Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+            padding-bottom: 70px;
+        }
+
+        /* Header Section (Yellow Background) */
+        .header-section {
+            background-color: #55b77e;
+            padding: 30px 20px 20px;
+            color: #333;
+            position: relative;
+            z-index: 5;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            display: flex; /* Added for alignment */
+            justify-content: space-between; /* Added for alignment */
+            align-items: center; /* Added for alignment */
+        }
+
+        .back-arrow {
+            font-size: 1.5em; /* Adjusted size to fit the new design */
+            cursor: pointer;
+            color: #333;
+            text-decoration: none;
+            flex-shrink: 0;
+            margin-right: 15px; /* Added margin for spacing */
+        }
+
+        .page-title {
+            font-size: 1.5em; /* Adjusted size to fit the new design */
+            font-weight: 700;
+            color: #333;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .list-icon {
+            margin-left: 10px;
+            font-size: 1.2em; /* Adjusted size */
+            color: #333; /* Adjusted color */
+        }
+
+        .header-section .empty-div {
+            width: 1.5em; /* Adjusted to match the back-arrow size */
+            flex-shrink: 0;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #f8f8f8; /* Slightly different shade */
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Notifications List Section */
+        .notifications-list-section {
+            margin-top: 0;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .notifications-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .notification-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px 20px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        /* Style for expiry notifications to make them stand out (optional) */
+        .notification-item.expiry {
+            border-left: 5px solid #e74c3c; /* Red border for urgency */
+        }
+        .notification-item.expired {
+            border-left: 5px solid #d9534f; /* Darker red for expired */
+            background-color: #fdd; /* Light red background */
+        }
+
+
+        .notification-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .notification-icon {
+            font-size: 1.8em;
+            margin-right: 15px;
+            color: #55b77e; /* Changed to match primary color */
+            flex-shrink: 0;
+        }
+
+        .notification-item.expiry .notification-icon {
+            color: #e74c3c; /* Red icon for expiry */
+        }
+         .notification-item.expired .notification-icon {
+            color: #d9534f; /* Darker red icon for expired */
+        }
+
+
+        .notification-content {
+            flex-grow: 1;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .notification-type {
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .notification-item.expiry .notification-type {
+             color: #e74c3c; /* Red type text */
+        }
+        .notification-item.expired .notification-type {
+             color: #d9534f; /* Darker red type text */
+        }
+
+        .notification-time {
+            font-size: 0.8em;
+            color: #777;
+        }
+
+        .notification-message {
+            font-size: 0.9em;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        /* Navigation Bar (Bottom) */
+        .nav-bar {
+            background-color: #55b77e; /* Changed to match primary color */
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 10;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1); /* Subtle top shadow */
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item.active {
+            color: #fff; /* Active navigation item turns white */
+            font-weight: 600;
+        }
+
+        .nav-item .icon {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        /* Responsive Adjustments */
+        @media (min-width: 768px) {
+            .header-section,
+            .main-content {
+                padding-left: 40px;
+                padding-right: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-section,
+            .main-content {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <a href="{% url 'mobileapp' %}" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+        <div class="page-title">
+            Notifications <span class="list-icon"><i class="fas fa-bell"></i></span>
+        </div>
+        <div class="empty-div"></div>
+    </div>
+
+    <div class="main-content">
+        <div class="notifications-list-section">
+            <h2 class="section-title">Your Notifications</h2>
+            <ul class="notifications-list">
+
+                {% for doc in expiring_documents %}
+                <li class="notification-item {% if doc.priority == 0 %}expired{% else %}expiry{% endif %}">
+                    <span class="notification-icon">
+                        {% if doc.priority == 0 %}
+                            <i class="fas fa-exclamation-triangle"></i> {% else %}
+                            <i class="fas fa-calendar-times"></i> {% endif %}
+                    </span>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-type">{{ doc.type }}</span>
+                            <span class="notification-time">Expires on {{ doc.expiry_date|date:"d M Y" }}</span>
+                        </div>
+                        <p class="notification-message">{{ doc.message }}</p>
+                    </div>
+                </li>
+                {% endfor %}
+
+                {% for trip in pending_trips %}
+                <li class="notification-item">
+                    <span class="notification-icon"><i class="fas fa-hourglass-half"></i></span>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-type">Pending Trip</span>
+                            <span class="notification-time">{{ trip.created_at|timesince }} ago</span>
+                        </div>
+                        <p class="notification-message">
+                            Trip from {{ trip.from_city }} to {{ trip.to_city }} is pending.
+                        </p>
+                    </div>
+                </li>
+                {% endfor %}
+
+                {% for trip in cancelled_trips %}
+                <li class="notification-item">
+                    <span class="notification-icon"><i class="fas fa-ban"></i></span>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-type">Cancelled Trip</span>
+                            <span class="notification-time">{{ trip.created_at|timesince }} ago</span>
+                        </div>
+                        <p class="notification-message">
+                            Trip from {{ trip.from_city }} to {{ trip.to_city }} has been cancelled. 
+                        </p>
+                    </div>
+                </li>
+                {% endfor %}
+
+                {% for remark in remarks %}
+                <li class="notification-item">
+                    <span class="notification-icon"><i class="fas fa-info-circle"></i></span>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-type">Admin Remark</span>
+                            <span class="notification-time">{{ remark.created_at|timesince }} ago</span>
+                        </div>
+                        <p class="notification-message">
+                            {{ remark.remark_text }}
+                        </p>
+                    </div>
+                </li>
+                {% endfor %}
+
+                {% if not pending_trips and not cancelled_trips and not remarks and not expiring_documents %}
+                <li class="notification-item">
+                    <span class="notification-icon"><i class="fas fa-bell-slash"></i></span>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-type">No Notifications</span>
+                        </div>
+                        <p class="notification-message">You’re all caught up! No new notifications.</p>
+                    </div>
+                </li>
+                {% endif %}
+
+            </ul>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <a href="{% url 'mobileapp' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-home"></i></span> <span><b>Home</b></span>
+        </a>
+        <a href="{% url 'notifications' %}" class="nav-item active">
+            <span class="icon"><i class="fas fa-bell"></i></span> <span><b>Alerts</b></span>
+        </a>
+        <a href="{% url 'alltrips' %}" class="nav-item">
+            <span class="icon"><i class="fas fa-map-marked-alt"></i></span> <span><b>Trips</b></span>
+        </a>
+        <a href="{% url 'settings' %}" class="nav-item ">
+            <span class="icon"><i class="fas fa-cog"></i></span> <span><b>Settings</b></span>
+        </a>
+    </div>
+</body>
+</html>

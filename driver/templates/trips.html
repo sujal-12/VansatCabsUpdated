@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Trip Records{% endblock title %}
+
+{% block content %}
+<style>
+  .form-switch .form-check-input {
+    margin-left: 7px;
+    width: 36px;
+    height: 18px;
+    background-color: #ddd;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .form-switch .form-check-input:checked {
+    background-color: #28a745;
+  }
+
+  .form-switch .form-check-input::before {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background-color: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+  }
+
+  .form-switch .form-check-input:checked::before {
+    transform: translateX(18px);
+  }
+
+  .form-switch .form-check-label {
+    font-weight: 500;
+    font-size: 13px;
+    margin-left: 8px;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  .form-check.form-switch {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  #tripSearch,
+  #statusFilter,
+  #tripTypeFilter {
+    width: 300px;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    margin-right: 10px;
+  }
+</style>
+<style>
+  .modal-body .row>div {
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  .modal-body strong {
+    display: inline-block;
+    width: 150px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .modal-body .section-header {
+    font-weight: 600;
+    font-size: 15px;
+    color: #007bff;
+    margin-top: 15px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 5px;
+  }
+
+  .modal-body {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 20px;
+  }
+
+  .modal-title {
+    font-weight: bold;
+    color: #333;
+  }
+
+  .modal-content {
+    border-radius: 8px;
+  }
+
+  .modal-footer .btn-secondary {
+    background-color: #6c757d;
+    border: none;
+  }
+</style>
+
+
+<div class="container-fluid page-body-wrapper">
+  {% include "sidebar.html" %}
+  <div class="main-panel">
+    <div class="content-wrapper">
+      <div class="row">
+        <div class="col-lg-12 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h3 class="card-title mb-2">Trip Records</h3>
+                  <p class="card-description mb-2">All trip records are shown here...</p>
+                </div>
+              </div>
+
+              <!-- Search and Filters -->
+              <div class="d-flex flex-wrap">
+                <input type="text" id="tripSearch" onkeyup="filterTrips()" placeholder="Search Trips...">
+                <select id="statusFilter" onchange="filterTrips()">
+                  <option value="">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Ongoing">Ongoing</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <select id="tripTypeFilter" onchange="filterTrips()">
+                  <option value="">All Trip Types</option>
+                  <option value="at">Airport Transfer</option>
+                  <option value="rt">Railway Transfer</option>
+                  <option value="os">Outstation</option>
+                  <option value="hr">Hourly Rental</option>
+                  <option value="ht">Holiday Tour</option>
+                </select>
+              </div>
+
+              <!-- Table -->
+              <div class="table-responsive mt-3">
+                <table class="table" id="tripTable">
+                  <thead>
+                    <tr>
+                      <th>Trip ID</th>
+                      <th>From</th>
+                      <th>To</th>
+                      <th>Customer Name</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for trip in trips %}
+                    <tr>
+                      <td>
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#tripModal{{ trip.id }}">
+                          {{ trip.booking_id }}
+                        </a>
+                      </td>
+                      <td>{{ trip.from_city }}</td>
+                      <td>{{ trip.to_city }}</td>
+                      <td>{{ trip.passenger_name }}</td>
+                      <td>
+  <span class="badge 
+    {% if trip.status == 'Completed' %}bg-success
+    {% elif trip.status == 'Pending' %}bg-warning
+    {% elif trip.status == 'Ongoing' %}bg-info
+    {% else %}bg-secondary{% endif %}">
+    {{ trip.status }}
+  </span>
+
+  {% if trip.status == "Pending" %}
+  <button class="btn btn-sm btn-danger ms-2" onclick="confirmCancel('{{ trip.id }}')">
+    Cancel
+  </button>
+  {% endif %}
+</td>
+
+                    </tr>
+
+                    <!-- Modal for trip details -->
+                    <div class="modal fade" id="tripModal{{ trip.id }}" tabindex="-1"
+                      aria-labelledby="tripModalLabel{{ trip.id }}" aria-hidden="true">
+                      <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="tripModalLabel{{ trip.id }}">Trip Details - {{ trip.booking_id
+                              }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <div class="row">
+                              <div class="section-header col-12">Passenger & Trip Info</div>
+                              <div class="col-md-6"><strong>Passenger Name:</strong> {{ trip.passenger_name }}</div>
+                              <div class="col-md-6"><strong>Contact Number:</strong> {{ trip.contact_number }}</div>
+                              <div class="col-md-6"><strong>Email:</strong> {{ trip.email_id }}</div>
+                              <div class="col-md-6"><strong>From:</strong> {{ trip.from_city }}</div>
+                              <div class="col-md-6"><strong>To:</strong> {{ trip.to_city }}</div>
+                              <div class="col-md-6"><strong>Trip Date:</strong> {{ trip.date }}</div>
+                              <div class="col-md-6"><strong>Trip Time:</strong> {{ trip.time }}</div>
+
+                              <div class="section-header col-12">Vehicle & Driver Info</div>
+                              <div class="col-md-6"><strong>Vehicle Type:</strong> {{ trip.vehicle_type }}</div>
+                              <div class="col-md-6"><strong>Vehicle Number:</strong> {{ trip.vehicle_number }}</div>
+                              <div class="col-md-6"><strong>Driver Name:</strong> {{ trip.driver_name }}</div>
+                              <div class="col-md-6"><strong>Driver Contact:</strong> {{ trip.driver_contact }}</div>
+
+                              <div class="section-header col-12">Payment Info</div>
+                              <div class="col-md-6"><strong>Payment Type:</strong> {{ trip.payment_type }}</div>
+                              <div class="col-md-6"><strong>Base Fare:</strong> ₹{{ trip.base_fare }}</div>
+                              <div class="col-md-6"><strong>Discount:</strong> ₹{{ trip.discount }}</div>
+                              <div class="col-md-6"><strong>Terminal Charges:</strong> ₹{{ trip.terminal_charges }}
+                              </div>
+                              <div class="col-md-6"><strong>Surcharges:</strong> ₹{{ trip.surcharges }}</div>
+                              <div class="col-md-6"><strong>Taxes:</strong> {{ trip.taxes }}</div>
+                              <div class="col-md-6"><strong>Total Amount:</strong> ₹{{ trip.total_amount }}</div>
+
+                              <div class="section-header col-12">Status Info</div>
+                              <div class="col-md-6"><strong>Status:</strong> {{ trip.status }}</div>
+                              <div class="col-md-6"><strong>OTP Verified:</strong> {{ trip.otp_verified }}</div>
+                              <div class="col-md-6"><strong>Created At:</strong> {{ trip.created_at }}</div>
+                            </div>
+
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {% empty %}
+                    <tr>
+                      <td colspan="5" class="text-center">No trip records found.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filter JS -->
+<script>
+  function filterTrips() {
+    const keyword = document.getElementById("tripSearch").value.toLowerCase();
+    const status = document.getElementById("statusFilter").value.toLowerCase();
+    const tripType = document.getElementById("tripTypeFilter").value.toLowerCase();
+    const table = document.getElementById("tripTable");
+    const rows = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < rows.length; i++) {
+      const cells = rows[i].getElementsByTagName("td");
+      if (cells.length === 0) continue;
+
+      const bookingId = cells[0].innerText.toLowerCase();
+      const from = cells[1].innerText.toLowerCase();
+      const to = cells[2].innerText.toLowerCase();
+      const name = cells[3].innerText.toLowerCase();
+      const rowStatus = cells[4].innerText.toLowerCase();
+
+      const tripTypeMatch = tripType === "" || bookingId.startsWith(tripType);
+      const keywordMatch = bookingId.includes(keyword) || from.includes(keyword) || to.includes(keyword) || name.includes(keyword);
+      const statusMatch = status === "" || rowStatus === status;
+
+      rows[i].style.display = (keywordMatch && statusMatch && tripTypeMatch) ? "" : "none";
+    }
+  }
+</script>
+
+<script>
+  function confirmCancel(tripId) {
+    if (confirm("Are you sure you want to cancel this trip?")) {
+      fetch(`/cancel-trip/${tripId}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie('csrftoken'),
+          "Content-Type": "application/json"
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert("Trip cancelled successfully.");
+          location.reload();  // Refresh to update status
+        } else {
+          alert("Error: " + data.error);
+        }
+      });
+    }
+  }
+
+  // Helper function to get CSRF token
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
+
+{% endblock content %}
+

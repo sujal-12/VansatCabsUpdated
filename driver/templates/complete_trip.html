@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {% load static %} {# This line is essential for using static files #}
+    <title>Complete Trips</title>
+    <style>
+        /* Global Styles & Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Map Container */
+        #map {
+            width: 100%;
+            height: 70vh;
+            background-color: #e0e0e0;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            margin-top: 0;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            min-height: 30vh;
+            max-height: 30vh;
+            padding: 20px;
+            background-color: #f8f8f8;
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+            margin-top: -50px;
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 90px;
+            overflow-y: hidden;
+        }
+
+        /* Ride Card Styles */
+        .ride-card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .driver-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1px;
+            margin-bottom: 0;
+        }
+
+        .driver-details {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-grow: 1;
+        }
+
+        .driver-name-and-contact {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            line-height: 1.3;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .driver-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .toggle-icon {
+            display: none;
+        }
+
+        /* Trip Details */
+        .trip-details-collapsed {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow: visible;
+            max-height: none;
+        }
+
+        .location-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.95em;
+            color: #555;
+        }
+
+        .location-icon-marker {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            font-size: 0.8em;
+            margin-top: 2px;
+        }
+
+        .location-icon-marker.pickup {
+            background-color: #e6f7ed;
+            color: #55b77e;
+        }
+
+        .location-icon-marker.destination {
+            background-color: #f7e6e6;
+            color: #e74c3c;
+        }
+
+        .location-icon-marker.phone {
+            background-color: #e0f2f7;
+            color: #3498db;
+        }
+
+        .location-details {
+            flex-grow: 1;
+        }
+
+        .location-address strong {
+            font-weight: 600;
+            color: #333;
+            margin-right: 5px;
+        }
+
+        /* Fixed Action Button at the Bottom */
+        .action-button-container {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 420px;
+            background-color: #f8f8f8;
+            padding: 15px 20px;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .complete-trip-button {
+            flex-grow: 1;
+            width: 100%;
+            max-width: 360px;
+            padding: 15px;
+            background-color: #55b77e;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        .complete-trip-button:hover {
+            background-color: #4ca873;
+            transform: translateY(-1px);
+        }
+
+        .complete-trip-button:active {
+            transform: translateY(0);
+        }
+
+        /* Pop-up Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s;
+        }
+
+        .popup-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .popup-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+            transform: translateY(20px);
+            transition: transform 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+        }
+
+        .popup-overlay.show .popup-content {
+            transform: translateY(0);
+        }
+
+        .popup-content h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .popup-buttons {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .popup-buttons button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            flex-grow: 1;
+        }
+
+        .popup-buttons .btn-yes {
+            background-color: #55b77e;
+            color: black;
+        }
+
+        .popup-buttons .btn-yes:hover {
+            background-color: #4ca873;
+        }
+
+        .popup-buttons .btn-no {
+            background-color: #e74c3c;
+            color: #fff;
+        }
+
+        .popup-buttons .btn-no:hover {
+            background-color: #c0392b;
+        }
+
+        /* Extra Charge Form Styles */
+        .extra-charge-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .charge-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .charge-item input[type="text"],
+        .charge-item input[type="number"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .charge-item input[type="text"] {
+            min-width: 100px;
+        }
+
+        .charge-item input[type="number"] {
+            width: 80px;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .add-more-btn {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s ease;
+            margin-top: 10px;
+            align-self: flex-start;
+        }
+
+        .add-more-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .charge-item .remove-btn {
+            background-color: #ccc;
+            color: #555;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 0.9em;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .charge-item .remove-btn:hover {
+            background-color: #bbb;
+        }
+
+        .extra-charge-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .extra-charge-buttons .btn-add-charges {
+            background-color: #55b77e;
+            color: black;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .extra-charge-buttons .btn-add-charges:hover {
+            background-color: #4ca873;
+        }
+
+        /* Message Box Styling */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #55b77e;
+            color: black;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            font-weight: 500;
+            text-align: center;
+            max-width: 300px;
+            width: 90%;
+        }
+
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-box.error {
+            background-color: #f44336;
+        }
+
+        /* Close Button for Popup */
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.2s ease;
+        }
+
+        .close-button:hover {
+            color: #333;
+        }
+
+        /* Total Display */
+        .total-amount {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #333;
+            text-align: right;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            margin-top: 10px;
+        }
+
+        /* Payment Method Styles */
+        .payment-methods {
+            margin-top: 15px;
+            text-align: left;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .payment-methods p {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .payment-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .payment-option {
+            flex: 1;
+            padding: 12px 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            background-color: #f0f0f0;
+            color: #555;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .payment-option.selected {
+            border-color: #55b77e;
+            background-color: #e6f7ed;
+            color: #55b77e;
+            box-shadow: 0 0 0 3px rgba(85, 183, 126, 0.3);
+        }
+
+        /* QR Code Pop-up */
+        .qr-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .qr-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .qr-content {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            max-width: 300px;
+            width: 85%;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease-out;
+        }
+
+        .qr-overlay.show .qr-content {
+            transform: scale(1);
+        }
+
+        .qr-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .qr-content .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.8em;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .qr-content .close-button:hover {
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div class="main-content">
+        <div class="ride-card">
+            <div class="driver-info" id="driverInfoToggle">
+                <div class="driver-details">
+                    <div class="driver-name-and-contact">
+                        <span class="driver-name">{{ driver.drivername }}</span>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-down toggle-icon" id="toggleArrow"></i>
+            </div>
+            {% if assigned_trip %}
+            <div class="trip-details-collapsed" id="tripDetailsSection">
+                <div class="location-item">
+                    <div class="location-icon-marker pickup">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+                    <div class="location-details">
+                        <span class="location-address">
+                            <strong>From:</strong> {{ assigned_trip.from_city }}
+                        </span>
+                    </div>
+                </div>
+                <div class="location-item">
+                    <div class="location-icon-marker destination">
+                        <i class="fa-solid fa-map-pin"></i>
+                    </div>
+                    <div class="location-details">
+                        <span class="location-address">
+                            <strong>To:</strong> {{ assigned_trip.to_city }}
+                        </span>
+                    </div>
+                </div>
+                <div class="location-item">
+                    <div class="location-icon-marker phone">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
+                    <div class="location-details">
+                        <span class="location-address">
+                            <strong>Contact:</strong> {{ assigned_trip.contact_number|default:"N/A" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="trip-details-collapsed">
+                <p>No ongoing trip.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% if assigned_trip and assigned_trip.status == 'Ongoing' %}
+        <div class="action-button-container">
+            <button type="button" class="complete-trip-button" onclick="completeRide()">Complete Trip</button>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="popup-overlay" id="extraChargePopup">
+        <div class="popup-content" id="popupContent">
+            <div id="initialQuestion">
+                <button class="close-button" onclick="hidePopup()">×</button>
+                <h3>Want to add extra charges?</h3>
+                <div class="popup-buttons">
+                    <form method="post" id="noExtraChargeForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="complete">
+                        <input type="hidden" name="add_extra_charges" value="no">
+                        <button type="submit" class="btn-no">No</button>
+                    </form>
+                    <button class="btn-yes" onclick="handleYesExtraCharge()">Yes</button>
+                </div>
+            </div>
+            <div id="extraChargeForm" style="display: none;">
+                <button class="close-button" onclick="hidePopup()">×</button>
+                <h3>Add Extra Charges</h3>
+                <form method="post" id="extraChargeFormSubmit">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="complete">
+                    <input type="hidden" name="add_extra_charges" value="yes">
+                    <input type="hidden" name="payment_method" id="paymentMethodInput" value="">
+                    <div class="extra-charge-form" id="chargeItemsContainer">
+                        <div class="charge-item">
+                            <input type="text" name="extra_key[]" placeholder="Description" class="charge-description"
+                                oninput="calculateTotal()" required>
+                            <input type="number" name="extra_value[]" placeholder="Price" class="charge-price" min="0"
+                                value="0" oninput="calculateTotal()" required>
+                            <button type="button" class="remove-btn" onclick="removeChargeItem(this)">x</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-more-btn" onclick="addChargeItem()">+ Add More Fields</button>
+                    <div class="total-amount">
+                        Total: ₹<span id="totalCharge">0.00</span>
+                    </div>
+                    <div class="payment-methods">
+                        <p>Select Payment Method:</p>
+                        <div class="payment-options">
+                            <button type="button" class="payment-option" id="cashPayment"
+                                onclick="selectPaymentMethod('cash')">
+                                <i class="fa-solid fa-money-bill-wave"></i> Cash
+                            </button>
+                            <button type="button" class="payment-option" id="onlinePayment"
+                                onclick="selectPaymentMethod('online')">
+                                <i class="fa-solid fa-qrcode"></i> Online
+                            </button>
+                        </div>
+                    </div>
+                    <div class="extra-charge-buttons">
+                        <button type="submit" class="btn-add-charges">Add Charges & Complete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="qr-overlay" id="qrCodePopup">
+        <div class="qr-content">
+            <button class="close-button" onclick="hideQrCode()">×</button>
+            <h3>Scan to Pay</h3>
+            <img src="{% static 'driver/static/images/vansat_qr_code.png' %}" alt="QR Code"> {# Adjust path here for
+            your QR Code #}
+            <p>Please scan the QR code to complete the payment.</p>
+        </div>
+    </div>
+
+    <div id="messageBox" class="message-box"></div>
+
+    <script>
+    let map;
+    let driverMarker;
+    let directionsService;
+    let directionsRenderer;
+    let selectedPaymentMethod = '';
+    let watchId; // For location tracking
+    let lastSentTime = 0; // For throttling backend updates
+    const sendInterval = 10000; // 10 seconds
+
+    function initMap() {
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer({
+            polylineOptions: {
+                strokeColor: '#55b77e',
+                strokeWeight: 5
+            },
+            suppressMarkers: true
+        });
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: 20.5937, lng: 78.9629 },
+            zoom: 5,
+            disableDefaultUI: true,
+            zoomControl: false,
+            streetViewControl: false,
+            mapTypeControl: false,
+            fullscreenControl: false
+        });
+
+        directionsRenderer.setMap(map);
+
+        // Car icon
+        const carImageIcon = {
+            url: "{% static 'driver/static/images/Untitled design (1).png' %}",
+            scaledSize: new google.maps.Size(40, 40),
+            anchor: new google.maps.Point(20, 20)
+        };
+
+        driverMarker = new google.maps.Marker({
+            map: map,
+            icon: carImageIcon,
+            title: 'Your Vehicle'
+        });
+
+        // Live location tracking with throttled backend updates
+        if (navigator.geolocation) {
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    driverMarker.setPosition(pos);
+                    map.setCenter(pos);
+                    map.setZoom(15);
+                    showMessage('Live location updated', false);
+
+                    const now = Date.now();
+                    if (now - lastSentTime > sendInterval) {
+                        sendLocationToBackend(pos.lat, pos.lng, position.timestamp);
+                        lastSentTime = now;
+                    }
+                },
+                (error) => {
+                    console.error('Geolocation error:', error);
+                    showMessage('Unable to access location. Please enable location services.', true);
+                    map.setCenter({ lat: 20.5937, lng: 78.9629 });
+                    map.setZoom(5);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            showMessage('Geolocation is not supported by this browser.', true);
+        }
+
+        {% if assigned_trip %}
+        const fromCity = "{{ assigned_trip.from_city|escapejs }}";
+        const toCity = "{{ assigned_trip.to_city|escapejs }}";
+        calculateAndDisplayRoute(fromCity, toCity);
+
+        const geocoder = new google.maps.Geocoder();
+        const pickupIcon = {
+            path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z',
+            fillColor: '#55b77e',
+            fillOpacity: 1,
+            strokeColor: '#fff',
+            strokeWeight: 2,
+            scale: 1.5,
+            anchor: new google.maps.Point(12, 24)
+        };
+        geocoder.geocode({ address: fromCity }, function (results, status) {
+            if (status === 'OK' && results[0]) {
+                new google.maps.Marker({
+                    position: results[0].geometry.location,
+                    map: map,
+                    icon: pickupIcon,
+                    title: 'Pickup Location'
+                });
+            } else {
+                showMessage('Failed to geocode pickup location.', true);
+            }
+        });
+
+        const destinationIcon = {
+            path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z',
+            fillColor: '#e74c3c',
+            fillOpacity: 1,
+            strokeColor: '#fff',
+            strokeWeight: 2,
+            scale: 1.5,
+            anchor: new google.maps.Point(12, 24)
+        };
+        geocoder.geocode({ address: toCity }, function (results, status) {
+            if (status === 'OK' && results[0]) {
+                new google.maps.Marker({
+                    position: results[0].geometry.location,
+                    map: map,
+                    icon: destinationIcon,
+                    title: 'Destination Location'
+                });
+            } else {
+                showMessage('Failed to geocode destination location.', true);
+            }
+        });
+        {% endif %}
+    }
+
+    function sendLocationToBackend(lat, lng, timestamp) {
+        fetch("{% url 'update_location' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({
+                latitude: lat,
+                longitude: lng,
+                timestamp: timestamp
+            })
+        })
+        .then(res => res.json())
+        .then(data => console.log("Location saved:", data))
+        .catch(err => console.error("Error saving location:", err));
+    }
+
+    function calculateAndDisplayRoute(from, to) {
+        directionsService.route({
+            origin: from,
+            destination: to,
+            travelMode: google.maps.TravelMode.DRIVING
+        }, (response, status) => {
+            if (status === 'OK') {
+                directionsRenderer.setDirections(response);
+            } else {
+                console.error('Directions request failed due to ' + status);
+                showMessage('Could not load trip route. Please check your API key and enabled APIs.', true);
+            }
+        });
+    }
+
+    function completeRide() {
+        document.getElementById('extraChargePopup').classList.add('show');
+        document.getElementById('initialQuestion').style.display = 'block';
+        document.getElementById('extraChargeForm').style.display = 'none';
+        selectedPaymentMethod = '';
+        document.getElementById('cashPayment').classList.remove('selected');
+        document.getElementById('onlinePayment').classList.remove('selected');
+    }
+
+    function handleYesExtraCharge() {
+        document.getElementById('initialQuestion').style.display = 'none';
+        document.getElementById('extraChargeForm').style.display = 'block';
+        document.getElementById('chargeItemsContainer').innerHTML = `
+            <div class="charge-item">
+                <input type="text" name="extra_key[]" placeholder="Description" class="charge-description" oninput="calculateTotal()" required>
+                <input type="number" name="extra_value[]" placeholder="Price" class="charge-price" min="0" value="0" oninput="calculateTotal()" required>
+                <button type="button" class="remove-btn" onclick="removeChargeItem(this)">x</button>
+            </div>
+        `;
+        calculateTotal();
+        selectedPaymentMethod = '';
+        document.getElementById('cashPayment').classList.remove('selected');
+        document.getElementById('onlinePayment').classList.remove('selected');
+    }
+
+    function addChargeItem() {
+        const newItem = document.createElement('div');
+        newItem.classList.add('charge-item');
+        newItem.innerHTML = `
+            <input type="text" name="extra_key[]" placeholder="Description" class="charge-description" oninput="calculateTotal()" required>
+            <input type="number" name="extra_value[]" placeholder="Price" class="charge-price" min="0" value="0" oninput="calculateTotal()" required>
+            <button type="button" class="remove-btn" onclick="removeChargeItem(this)">x</button>
+        `;
+        document.getElementById('chargeItemsContainer').appendChild(newItem);
+        calculateTotal();
+    }
+
+    function removeChargeItem(button) {
+        if (document.getElementById('chargeItemsContainer').children.length > 1) {
+            button.parentElement.remove();
+            calculateTotal();
+        } else {
+            showMessage('You must have at least one charge item.', true);
+        }
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        const chargePrices = document.querySelectorAll('.charge-price');
+        chargePrices.forEach(input => {
+            const price = parseFloat(input.value);
+            if (!isNaN(price) && price >= 0) {
+                total += price;
+            }
+        });
+        document.getElementById('totalCharge').textContent = total.toFixed(2);
+    }
+
+    function selectPaymentMethod(method) {
+        selectedPaymentMethod = method;
+        document.getElementById('cashPayment').classList.remove('selected');
+        document.getElementById('onlinePayment').classList.remove('selected');
+        if (method === 'cash') {
+            document.getElementById('cashPayment').classList.add('selected');
+            document.getElementById('paymentMethodInput').value = 'cash';
+            hideQrCode();
+        } else if (method === 'online') {
+            document.getElementById('onlinePayment').classList.add('selected');
+            document.getElementById('paymentMethodInput').value = 'online';
+            showQrCode();
+        }
+    }
+
+    function showQrCode() {
+        document.getElementById('qrCodePopup').classList.add('show');
+    }
+
+    function hideQrCode() {
+        document.getElementById('qrCodePopup').classList.remove('show');
+    }
+
+    function hidePopup() {
+        document.getElementById('extraChargePopup').classList.remove('show');
+        hideQrCode();
+    }
+
+    function showMessage(message, isError = false) {
+        const messageBox = document.getElementById('messageBox');
+        messageBox.textContent = message;
+        messageBox.classList.remove('error');
+        if (isError) {
+            messageBox.classList.add('error');
+        }
+        messageBox.classList.add('show');
+        setTimeout(() => {
+            messageBox.classList.remove('show');
+        }, 3000);
+    }
+
+    window.addEventListener('unload', () => {
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+        }
+    });
+
+    window.addEventListener('load', () => {
+        if (!window.google || !window.google.maps) {
+            showMessage('Google Maps failed to load. Please check your API key and internet connection.', true);
+        }
+    });
+</script>
+
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8K8LRL9aOacWYYxIQn1YyeaJQVRzJqvM&callback=initMap&libraries=places"></script>
+</body>
+
+</html>

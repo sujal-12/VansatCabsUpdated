@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Vansat Cabs | {% block title %}Home{% endblock title %}</title>
+
+  {% load static %}
+
+  <!-- Core CSS plugins -->
+  <link rel="stylesheet" href="{% static 'vendors/feather/feather.css' %}">
+  <link rel="stylesheet" href="{% static 'vendors/ti-icons/css/themify-icons.css' %}">
+  <link rel="stylesheet" href="{% static 'vendors/css/vendor.bundle.base.css' %}">
+  <link rel="stylesheet" href="{% static 'vendors/font-awesome/css/font-awesome.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendors/mdi/css/materialdesignicons.min.css' %}">
+
+  <!-- Optional plugin-specific CSS -->
+  <link rel="stylesheet" type="text/css" href="{% static 'js/select.dataTables.min.css' %}">
+
+  <!-- Your project main CSS -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="{% static 'images/vansat_bg_logo.png' %}" />
+
+  <!-- DataTables (via CDN) -->
+  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  
+  <!-- jQuery and DataTables JS (via CDN) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <style>
+    @media print {
+    body * {
+        display: none !important;
+    }
+
+    #receiptSection, #receiptSection * {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    #receiptSection {
+        position: absolute !important;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        padding: 20px;
+        background: white;
+        box-shadow: none !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+}
+  </style>
+</head>
+
+
+<body>
+  <div class="container-scroller">
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
+        {% if user.is_authenticated %}
+          {% if user.username == 'admin@gmail.com' %}
+            <a class="navbar-brand brand-logo me-5" href="{% url 'admin_dashboard' %}"><img src="{% static 'images/icon.jpeg' %}" class="me-2"
+              alt="logo" /><span class="text-dark">Vansat</span> Cabs</a>
+            <a class="navbar-brand brand-logo-mini" href="{% url 'admin_dashboard' %}"><img src="{% static 'images/icon.jpeg' %}" class="me-2"
+              alt="logo" /></a>
+          {% endif %}
+        {% else %}
+        <a class="navbar-brand brand-logo me-5" href="/"><img src="{% static 'images/icon.jpeg' %}" class="me-2"
+          alt="logo" /><span class="text-dark">Vansat</span> Cabs</a>
+        <a class="navbar-brand brand-logo-mini" href="/"><img src="{% static 'images/icon.jpeg' %}" class="me-2"
+          alt="logo" /></a>
+        {% endif %}
+        
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        {% if user.is_authenticated %}
+        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+          <span class="icon-menu"></span>
+        </button>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button"
+          data-toggle="offcanvas">
+          <span class="icon-menu"></span>
+        </button>
+        {% endif %}
+        {% comment %} {% endcomment %}
+        <ul class="navbar-nav mr-lg-2">
+          {% if node %}
+          <div class="navbar-header mx-auto">
+            <h2 class="navbar-brand mb-0 ms-3">{{ node.nodeCity }} Airport</h2>
+          </div>
+          {% endif %}
+        </ul>
+        <ul class="navbar-nav navbar-nav-right"> 
+          {% if user.is_authenticated %}
+          <div class="navbar-header mx-auto mt-3">
+            <h2 class="navbar-brand mb-0 ms-3"><span id="navbar-clock" class="navbar-text mr-3"></span></h2>
+          </div>
+          <li class="nav-item dropdown">
+            <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#"
+              data-bs-toggle="dropdown">
+              <i class="icon-bell mx-0"></i>
+              <span class="count"></span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list"
+              aria-labelledby="notificationDropdown">
+              <p class="mb-0 font-weight-normal float-left dropdown-header">Notifications</p>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-success">
+                    <i class="ti-info-alt mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">Application Error</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted"> Just now </p>
+                </div>
+              </a>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-warning">
+                    <i class="ti-settings mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">Settings</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted"> Private message </p>
+                </div>
+              </a>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-info">
+                    <i class="ti-user mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">New user registration</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted"> 2 days ago </p>
+                </div>
+              </a>
+            </div>
+          </li>
+          <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" id="profileDropdown">
+              <img src="{% static 'images/faces/face28.jpg' %}" alt="profile" />
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+              <a class="dropdown-item">
+                <i class="ti-settings text-primary"></i> Settings </a>
+              <a class="dropdown-item" href="{% url 'sign_out' %}">
+                <i class="ti-power-off text-primary"></i> Logout </a>
+            </div>
+          </li>
+          {% comment %} <li class="nav-item nav-settings d-none d-lg-flex">
+            <a class="nav-link" href="#">
+              <i class="icon-ellipsis"></i>
+            </a>
+          </li>  {% endcomment %}
+          {% else %}
+          <li class="nav-item d-none d-lg-flex mx-2">
+            <a class="btn btn-dark" href="{% url 'sign_in' %}">
+              Sign IN
+            </a>
+          </li>
+          <li class="nav-item d-none d-lg-flex mx-2">
+            <a class="btn btn-outline-dark" href="#">
+              Sign Up
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </nav>
+    {% for message in messages %}
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    {% if message.tags == 'success' %}
+    <script>
+      var m = "{{ message }}"
+      swal(m, '', 'success');
+    </script>
+    {% elif message.tags == 'danger' %}
+    <script>
+      var m = "{{ message }}"
+      swal(m, '', 'error');
+    </script>
+    {% elif message.tags == 'info' %}
+    <script>
+      var m = "{{ message }}"
+      swal(m, '');
+    </script>
+    {% endif %}
+    {% endfor %}
+
+
+    {% block content %}
+
+
+    {% endblock content %}
+  </div>
+ <!-- container-scroller -->
+
+<!-- plugins:js -->
+<script src="{% static 'vendors/js/vendor.bundle.base.js' %}"></script>
+<!-- endinject -->
+
+<!-- Plugin js for this page -->
+<script src="{% static 'vendors/chart.js/chart.umd.js' %}"></script>
+
+<!-- jQuery (from CDN, if not included in vendor.bundle.base.js) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables JS + Bootstrap 5 integration from CDN -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- DataTables Select plugin (local, assuming exists) -->
+<script src="{% static 'js/dataTables.select.min.js' %}"></script>
+<!-- End plugin js for this page -->
+
+<!-- inject:js -->
+<script src="{% static 'js/off-canvas.js' %}"></script>
+<script src="{% static 'js/template.js' %}"></script>
+<script src="{% static 'js/settings.js' %}"></script>
+<script src="{% static 'js/todolist.js' %}"></script>
+<!-- endinject -->
+
+<!-- Custom js for this page-->
+<script src="{% static 'js/jquery.cookie.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'js/node_dashboard_separated.js' %}"></script>
+<!-- End custom js for this page-->
+
+<script>
+  function formatDateDDMMYYYY(date) {
+      const dd = String(date.getDate()).padStart(2, '0');
+      const mm = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-based
+      const yyyy = date.getFullYear();
+      return `${dd}-${mm}-${yyyy}`;
+  }
+
+  function formatTime12hr(date) {
+      let hours = date.getHours();
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12; // Convert 0 to 12
+      return `${hours}:${minutes} ${ampm}`;
+  }
+  function updateClock() {
+      const now = new Date();
+      const date = formatDateDDMMYYYY(now);
+      const time = formatTime12hr(now);
+      document.getElementById('navbar-clock').textContent = `${date} ${time}`;
+  }
+
+  // Initialize the clock immediately
+  updateClock();
+
+  // Update the clock every second
+  setInterval(updateClock, 1000);
+</script>
+
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8K8LRL9aOacWYYxIQn1YyeaJQVRzJqvM&libraries=places" defer></script>
+{% if node %}
+<script>
+  const selectedCity = "{{ node.nodeCity }}"; // Use the node's city
+  console.log("Selected City:", selectedCity);
+  window.nodeAddress = "{{ node.nodeAddress|escapejs }}";
+  window.nodeLatitude = "{{ node.nodeLatitude }}";
+  window.nodeLongitude = "{{ node.nodeLongitude }}";
+  window.nodeId = "{{ node.nodeID }}";
+</script>
+
+
+{% endif %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</body>
+
+</html>

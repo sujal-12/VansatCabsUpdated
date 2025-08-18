@@ -1,0 +1,512 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ node.nodeCity }} Drivers{% endblock title %}
+
+{% block content %}
+<div class="container-fluid page-body-wrapper">
+    {% include "sidebar.html" %}
+
+    <div class="main-panel w-100">
+        <div class="content-wrapper">
+            <div class="row">
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h3 class="card-title text-primary fw-bold">{{ node.nodeCity }} - Vehicle Requests
+                                    </h3>
+                                    <p class="card-description text-muted">
+                                        Review and manage pending vehicle registrations for this city.
+                                    </p>
+                                </div>
+                                <div class="d-flex justify-content-end mb-3">
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDriverModal">+ Add vehicle
+                                    </button>
+                                </div>
+
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped table-hover align-middle text-center">
+                                    <thead class="bg-gradient-primary text-white">
+                                        <tr>
+                                            <th>First Name</th>
+                                            <th>Last Name</th>
+                                            <th>City</th>
+                                            <th>Password</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for driver in drivers %}
+                                        <tr>
+                                            <td>{{ driver.driverfirstname }}</td>
+                                            <td>{{ driver.driverlastname }}</td>
+                                            <td>{{ driver.node }}</td>
+                                            <td>{{ driver.driverpassword }}</td>
+                                            <td>
+                                                <form action="{% url 'approve_driver' driver.id %}" method="post"
+                                                    class="d-flex align-items-center"
+                                                    style="gap: 6px; flex-wrap: nowrap;">
+                                                    {% csrf_token %}
+                                                    <select name="vehicletype" required
+                                                        style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; font-size: 13px; width: 140px; height: 30px;">
+                                                        <option value="">Vehicle Type</option>
+                                                        <option value="hatchback">Hatchback</option>
+                                                        <option value="seden">Seden</option>
+                                                        <option value="premiumSeden">Premium Seden</option>
+                                                        <option value="muv">MUV</option>
+                                                        <option value="suv">SUV</option>
+                                                        <option value="premiumSUV">Premium SUV</option>
+                                                        <option value="acTravellar">AC Travellar</option>
+                                                        <option value="buses">Buses</option>
+                                                    </select>
+                                                    <button type="submit" class="btn btn-outline-success btn-sm"
+                                                        title="Accept"
+                                                        style="padding: 4px 8px; font-size: 13px; height: 30px;">
+                                                        <i class="fas fa-check-circle me-1"></i> Accept
+                                                    </button>
+                                                    <a href="{% url 'reject_driver' driver.id %}"
+                                                        class="btn btn-outline-danger btn-sm" title="Reject"
+                                                        style="padding: 4px 8px; font-size: 13px; height: 30px;">
+                                                        <i class="fas fa-times-circle me-1"></i> Reject
+                                                    </a>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">No Vehicle Requests found for this
+                                                City.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-lg-12 grid-margin stretch-card">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h3 class="card-title text-success fw-bold">All Vehicles - {{ node.nodeCity}} </h3>
+                                    <p class="card-description text-muted">
+                                        Below is the list of all registered vehicles.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped table-hover align-middle text-center">
+                                    <thead class="bg-gradient-success text-white">
+                                        <tr>
+                                            <th>Profile Picture</th>
+                                            <th>Vehicle Number</th>
+                                            <th>Vehicle Type</th>
+                                            <th>Vehicle Name</th>
+                                            <th>Driver Name</th>
+                                            <th>Mobile No</th>
+                                            <th>License No</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for driver in all_drivers %}
+                                        <tr>
+                                            <td>
+                                                {% if driver.profile_picture %}
+                                                <img src="{{ driver.profile_picture.url }}" class="rounded-circle"
+                                                    width="50" height="50" alt="Profile">
+                                                {% else %}
+                                                <img src="{% static 'images/default-profile.png' %}"
+                                                    class="rounded-circle" width="50" height="50" alt="Profile Image">
+                                                {% endif %}
+                                            </td>
+
+                                            <td>{{ driver.vehicle_number|default:"N/A" }}</td>
+                                            <td>{{ driver.vehicletype|default:"N/A" }}</td>
+                                            <td>{{ driver.vehicle_name|default:"N/A" }}</td>
+
+                                            <td>{{ driver.driverfirstname }} {{ driver.driverlastname }}</td>
+
+                                            <td>{{ driver.drivermobileno }}</td>
+                                            <td>{{ driver.driverlicense_number }}</td>
+
+                                            <td>
+                                                <a href="{% url 'edit_driver' node.nodeID driver.id %}"class="btn btn-outline-primary btn-sm me-2">Edit</a>
+                                                
+                                                <a href="{% url 'view_driver' node.nodeID driver.id %}"
+                                                class="btn btn-outline-info btn-sm me-2"> View
+                                                </a>
+                                                <a href="{% url 'delete_driver' node.nodeID driver.id %}"
+                                                    onclick="return confirm('Are you sure you want to delete this vehicle?');"
+                                                    class="btn btn-outline-danger btn-sm me-2"> Delete
+                                                </a>
+                                                <button type="button" class="btn btn-outline-dark btn-sm"
+                                                    data-bs-toggle="modal" data-bs-target="#reportModal"
+                                                    data-driver-id="{{ driver.id }}"
+                                                    data-driver-name="{{ driver.driverfirstname }} {{ driver.driverlastname }}">
+                                                    Report
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="9" class="text-center text-muted">No vehicles found in the
+                                                system.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div> </div>
+<style>
+/* Styling for the input group icons */
+.input-group {
+    position: relative;
+}
+
+.left-icon {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: #6c757d;
+    z-index: 2;
+}
+
+.right-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+    z-index: 2;
+}
+
+/* Padding to avoid text overlapping with icons */
+.input-group input,
+.input-group select {
+    padding-left: 35px;
+    padding-right: 35px;
+}
+
+/* Error message styling */
+.error-message {
+    font-size: 0.8rem;
+    color: red;
+    margin-top: 4px;
+    padding-left: 35px;
+}
+</style>
+
+<div class="modal fade" id="addDriverModal" tabindex="-1" aria-labelledby="addDriverModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addDriverModalLabel">Add New Vehicle</h5>
+                <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'add_driver' node.nodeID %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <h5 class="text-black-50">Vehicle Details</h5>
+                    <hr class="sidebar-divider">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <input type="text" class="form-control" id="vehicle_number" name="vehicle_number" placeholder="Vehicle Number" required>
+                                <div id="vehicle_numberError" class="error-message"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <input type="text" class="form-control" id="vehicle_name" name="vehicle_name" placeholder="Vehicle Name" required>
+                                <div id="vehicle_nameError" class="error-message"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <select class="form-select" id="vehicletype" name="vehicletype" required>
+                            <option value="">Vehicle Type</option>
+                            <option value="hatchback">Hatchback</option>
+                            <option value="seden">Seden</option>
+                            <option value="premiumSeden">Premium Seden</option>
+                            <option value="muv">MUV</option>
+                            <option value="suv">SUV</option>
+                            <option value="premiumSUV">Premium SUV</option>
+                            <option value="acTravellar">AC Travellar</option>
+                            <option value="buses">Buses</option>
+                        </select>
+                    </div>
+                    <h5 class="text-black-50">Driver Details</h5>
+                    <hr class="sidebar-divider">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <input type="text" class="form-control" id="driverfirstname" name="driverfirstname" placeholder="First Name" required>
+                                <div id="driverfirstnameError" class="error-message"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <input type="text" class="form-control" id="driverlastname" name="driverlastname" placeholder="Last Name" required>
+                                <div id="driverlastnameError" class="error-message"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <input type="tel" class="form-control" id="drivermobileno" name="drivermobileno" placeholder="Mobile No" required maxlength="10" oninput="validateMobileNumber(event)">
+                                <div id="drivermobilenoError" class="error-message"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <input type="text" class="form-control" id="city" name="city" value="{{ node.nodeCity }}" readonly>
+                                <div id="cityError" class="error-message"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <input type="password" class="form-control" id="driverpassword" name="driverpassword" placeholder="Password" required>
+                                <div id="driverpasswordError" class="error-message"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <input type="password" class="form-control" id="driverconfirmpassword" name="driverconfirmpassword" placeholder="Confirm Password" required>
+                                <div id="driverconfirmpasswordError" class="error-message"></div>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Register Driver</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="reportModalLabel">Generate Driver Report</h5>
+                <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Generate a report for <strong id="driverNameReport"></strong>'s completed trips.</p>
+                <div class="form-group mb-3">
+                    <label for="reportPeriod" class="form-label">Select Report Period:</label>
+                    <select class="form-select" id="reportPeriod">
+                        <option value="15days">Last 15 Days</option>
+                        <option value="1month" selected>Last 1 Month</option>
+                        <option value="3months">Last 3 Months</option>
+                        <option value="6months">Last 6 Months</option>
+                        <option value="1year">Last 1 Year</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="downloadReportBtn">Download Report (CSV)</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const password = document.getElementById("driverpassword");
+    const toggle = document.getElementById("togglePassword");
+    const isVisible = password.type === "text";
+
+    password.type = isVisible ? "password" : "text";
+    toggle.classList.toggle("fa-eye");
+    toggle.classList.toggle("fa-eye-slash");
+}
+
+function toggleConfirmPassword() {
+    const confirmPassword = document.getElementById("driverconfirmpassword");
+    const toggle = document.getElementById("toggleConfirmPassword");
+    const isVisible = confirmPassword.type === "text";
+
+    confirmPassword.type = isVisible ? "password" : "text";
+    toggle.classList.toggle("fa-eye");
+    toggle.classList.toggle("fa-eye-slash");
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Utility function to display error messages
+    function showError(input, message) {
+        const errorDiv = document.getElementById(input.id + 'Error');
+        errorDiv.textContent = message;
+        input.classList.add('is-invalid');
+    }
+
+    // Utility function to clear error messages
+    function clearError(input) {
+        const errorDiv = document.getElementById(input.id + 'Error');
+        errorDiv.textContent = '';
+        input.classList.remove('is-invalid');
+    }
+
+    // Validation functions for each field
+    function validateVehicleNumber(input) {
+        const pattern = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/i;
+        if (!pattern.test(input.value.trim())) {
+            showError(input, 'Please enter a valid vehicle number (e.g., MH12AB1234).');
+        } else {
+            clearError(input);
+        }
+    }
+
+    function validateNotEmpty(input, fieldName) {
+        if (input.value.trim() === '') {
+            showError(input, `${fieldName} is required.`);
+        } else {
+            clearError(input);
+        }
+    }
+
+    function validateMobileNumber(event) {
+        const input = event.target;
+        const pattern = /^\d{10}$/;
+        if (!pattern.test(input.value.trim())) {
+            showError(input, 'Please enter a valid 10-digit mobile number.');
+        } else {
+            clearError(input);
+        }
+    }
+
+    function validatePassword(input) {
+        if (input.value.length < 6) {
+            showError(input, 'Password must be at least 6 characters long.');
+        } else {
+            clearError(input);
+        }
+    }
+
+    function validateConfirmPassword(passwordInput, confirmPasswordInput) {
+        if (confirmPasswordInput.value !== passwordInput.value) {
+            showError(confirmPasswordInput, 'Passwords do not match.');
+        } else {
+            clearError(confirmPasswordInput);
+        }
+    }
+
+    // Attach event listeners to input fields for Add Driver Modal
+    const vehicleNumber = document.getElementById('vehicle_number');
+    vehicleNumber.addEventListener('input', function () {
+        validateVehicleNumber(vehicleNumber);
+    });
+
+    const vehicleName = document.getElementById('vehicle_name');
+    vehicleName.addEventListener('input', function () {
+        validateNotEmpty(vehicleName, 'Vehicle name');
+    });
+
+    const vehicleType = document.getElementById('vehicletype');
+    vehicleType.addEventListener('change', function () {
+        validateNotEmpty(vehicleType, 'Vehicle type');
+    });
+
+    const driverFirstName = document.getElementById('driverfirstname');
+    driverFirstName.addEventListener('input', function () {
+        validateNotEmpty(driverFirstName, 'First name');
+    });
+
+    const driverLastName = document.getElementById('driverlastname');
+    driverLastName.addEventListener('input', function () {
+        validateNotEmpty(driverLastName, 'Last name');
+    });
+
+    const driverMobileNo = document.getElementById('drivermobileno');
+    driverMobileNo.addEventListener('input', validateMobileNumber); // Use the named function
+
+    const driverPassword = document.getElementById('driverpassword');
+    const driverConfirmPassword = document.getElementById('driverconfirmpassword');
+
+    driverPassword.addEventListener('input', function () {
+        validatePassword(driverPassword);
+        validateConfirmPassword(driverPassword, driverConfirmPassword);
+    });
+
+    driverConfirmPassword.addEventListener('input', function () {
+        validateConfirmPassword(driverPassword, driverConfirmPassword);
+    });
+
+    // Final validation on form submission for Add Driver Modal
+    const form = document.querySelector('#addDriverModal form');
+    form.addEventListener('submit', function (e) {
+        // Trigger validation for all fields
+        validateVehicleNumber(vehicleNumber);
+        validateNotEmpty(vehicleName, 'Vehicle name');
+        validateNotEmpty(vehicleType, 'Vehicle type');
+        validateNotEmpty(driverFirstName, 'First name');
+        validateNotEmpty(driverLastName, 'Last name');
+        validateMobileNumber({target: driverMobileNo}); // Pass event-like object for consistency
+        validatePassword(driverPassword);
+        validateConfirmPassword(driverPassword, driverConfirmPassword);
+
+        // Check if any input has the 'is-invalid' class
+        const invalidInputs = form.querySelectorAll('.is-invalid');
+        if (invalidInputs.length > 0) {
+            e.preventDefault(); // Prevent form submission
+        }
+    });
+
+
+    // Report Modal Logic
+    const reportModal = document.getElementById('reportModal');
+    const driverNameReport = document.getElementById('driverNameReport');
+    const reportPeriodSelect = document.getElementById('reportPeriod');
+    const downloadReportBtn = document.getElementById('downloadReportBtn');
+    let currentDriverId = null;
+
+    reportModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget; // Button that triggered the modal
+        currentDriverId = button.getAttribute('data-driver-id');
+        const driverName = button.getAttribute('data-driver-name');
+        driverNameReport.textContent = driverName;
+    });
+
+    downloadReportBtn.addEventListener('click', function () {
+        const selectedPeriod = reportPeriodSelect.value;
+        if (currentDriverId) {
+            // Construct the URL for downloading the report
+            const reportUrl = `{% url 'download_driver_report' 0 %}`.replace('0', currentDriverId) + `?period=${selectedPeriod}`;
+            window.location.href = reportUrl;
+            // Optionally close the modal after initiating download
+            const modal = bootstrap.Modal.getInstance(reportModal);
+            modal.hide();
+        }
+    });
+});
+</script>
+
+
+{% endblock %}
