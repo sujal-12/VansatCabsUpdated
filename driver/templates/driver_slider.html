@@ -1030,27 +1030,26 @@
             // Initialize form content
             updateFormContent(1);
         });
-
-        {% for message in messages %}
-        <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-        {% if message.tags == 'success' %}
-        <script>
-            var m = "{{ message }}";
-            swal("Success !", m, 'success');
-        </script>
-        {% elif message.tags == 'danger' %}
-        <script>
-            var m = "{{ message }}";
-            swal("Error !", m, 'error');
-        </script>
-        {% elif message.tags == 'info' %}
-        <script>
-            var m = "{{ message }}";
-            swal("Alert !", m, 'info');
-        </script>
-        {% endif %}
-        {% endfor %}
     </script>
+    {% for message in messages %}
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    {% if message.tags == 'success' %}
+    <script>
+        var m = "{{ message }}";
+        swal("Success !", m, 'success');
+    </script>
+    {% elif message.tags == 'danger' %}
+    <script>
+        var m = "{{ message }}";
+        swal("Error !", m, 'error');
+    </script>
+    {% elif message.tags == 'info' %}
+    <script>
+        var m = "{{ message }}";
+        swal("Alert !", m, 'info');
+    </script>
+    {% endif %}
+    {% endfor %}
 </body>
 
 </html>
