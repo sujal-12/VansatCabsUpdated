@@ -3094,51 +3094,38 @@ function printTripReceipt() {
     return;
   }
 
-  const printWindow = window.open("", "_blank", "width=800,height=900");
-  printWindow.document.write(`
+  // Create iframe
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "absolute";
+  iframe.style.width = "0px";
+  iframe.style.height = "0px";
+  iframe.style.border = "none";
+  document.body.appendChild(iframe);
+
+  // Write content into iframe
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write(`
     <html>
     <head>
         <title>Trip Receipt</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> 
         <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
         <style>
-          @page {
-              size: 80mm auto;
-              margin: 0;
-          }
-          html, body {
-              width: 80mm;
-              margin: 0 !important;
-              padding-right: 9px !important;
-              font-family: "MS Reference Sans Serif", sans-serif;
-              font-weight: bold;
-              font-size: 10px;
-              letter-spacing: 0.8px;
-              color: black;
-          }
-          h5, h6 {
-              font-weight: bold;
-              margin: 0;
-              padding: 0;
-              text-align: center;
-          }
-          p { margin: 0; padding: 0; }
-          .container-fluid, .row, .col-6, .col-12 {
-              padding: 0 !important;
-              margin: 0 !important;
-          }
+          @page { size: 80mm auto; margin: 0; } html, body { width: 80mm; margin: 0 !important; padding-right: 9px !important; font-family: "MS Reference Sans Serif", sans-serif; font-weight: bold; font-size: 10px; letter-spacing: 0.8px; color: black; } h5, h6 { font-weight: bold; margin: 0; padding: 0; text-align: center; } p { margin: 0; padding: 0; } .container-fluid, .row, .col-6, .col-12 { padding: 0 !important; margin: 0 !important; }
         </style>
     </head>
     <body>
-        <div class="container-fluid">
-          ${lastFetchedTripHTML}
-        </div>
+        <div class="container-fluid">${lastFetchedTripHTML}</div>
     </body>
     </html>
   `);
-  printWindow.document.close();
-  printWindow.onload = function () {
-    printWindow.print();
-    printWindow.close();
-  };
+  doc.close();
+
+  // Wait a moment, then print
+  iframe.contentWindow.focus();
+  iframe.contentWindow.print();
+
+  // Cleanup
+  setTimeout(() => document.body.removeChild(iframe), 1000);
 }
