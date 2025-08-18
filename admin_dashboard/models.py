@@ -271,6 +271,7 @@ class Trip(models.Model):
     payment_status = models.CharField(max_length=100)
     gst_number = models.CharField(max_length=15)
     company_name = models.CharField(max_length=100)
+    company_address = models.TextField()
 
     # New fields for commissions
     vansat_commission = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
