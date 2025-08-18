@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -119,15 +120,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_collected') # Crucial for 'collectstatic'
+STATIC_URL = '/static/'
 
+# Folder where collectstatic will put all files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_collected')
+
+# Extra places where Django will search for static files (optional)
 STATICFILES_DIRS = [
-    BASE_DIR , "admin_dashboard/static/",
-    BASE_DIR , "customer/static/",
-    BASE_DIR , "driver/static/",
-    
-]
+    os.path.join(BASE_DIR, "admin_dashboard/static"),
+    os.path.join(BASE_DIR, "customer/static"),
+    os.path.join(BASE_DIR, "driver/static"),
+]]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
