@@ -809,7 +809,7 @@ def download_report(request):
     )
 
     # Add logo
-    logo_path = find('driver/static/images/vansateng.png')
+    logo_path = find('images/vansateng.png')
     if logo_path and os.path.exists(logo_path):
         logo = Image(logo_path, width=60 * mm, height=19 * mm)
         logo_frame = KeepInFrame(50 * mm, 20 * mm, [logo], hAlign='CENTER')

@@ -61,9 +61,7 @@
                             <!-- Title -->
                             <h5 class="card-title text-dark mb-1">Trip Details</h5>
                             <hr class="bg-dark mt-0 mb-3">
-
                             <!-- Dynamic Sections -->
-                            
                             <div id="tripDetailsSection" class="container mt-2"></div>
                         </div>
                     </div>
@@ -100,6 +98,7 @@
                             <hr class="bg-dark mt-0 mb-3">
                             <div class="row col-lg-12 m-2" id="tripTypeSection" style="display: none;"></div>
                             <div class="row col-lg-12 m-2" id="stepOneSection" style="display: none;"></div>
+                            <div class="row col-lg-12 m-2" id="tripDetailsSection" style="display: none;"></div>
                         </div>
                     </div>
                 </div>
@@ -107,103 +106,6 @@
         </div>
     </div>
 </div>
-<!-- Razorpay User Info Modal -->
-<div class="modal fade" id="razorpayUserModal" tabindex="-1" aria-labelledby="razorpayUserModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title" id="razorpayUserModalLabel">Enter Customer Details</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-      <div class="modal-body">
-        <div class="container-fluid">
-          <div class="row">
-            <!-- Customer Name -->
-            <div class="col-md-6 mb-3">
-              <label for="rzp-name" class="form-label fw-bold">Customer Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="rzp-name" placeholder="Enter your name" required>
-            </div>
-
-            <!-- Contact Number -->
-            <div class="col-md-6 mb-3">
-              <label for="rzp-contact" class="form-label fw-bold">Contact Number <span class="text-danger">*</span></label>
-              <input type="tel" class="form-control" id="rzp-contact" placeholder="9876543210" required>
-            </div>
-          </div>
-
-          <div class="row">
-            <!-- Email -->
-            <div class="col-md-6 mb-3">
-              <label for="rzp-email" class="form-label fw-bold">Email</label>
-              <input type="email" class="form-control" id="rzp-email" placeholder="example@domain.com">
-            </div>
-
-            <!-- GST Toggle -->
-            <div class="col-md-6 mb-3 d-flex align-items-end">
-              <div>
-                <label for="gstToggle" class="form-label fw-bold d-block">Need GST Bill?</label>
-                <div class="form-check p-0">
-                  <div class="form-switch fs-4">
-                    <input class="form-check-input" type="checkbox" id="gstToggle" onchange="toggleGSTFields()" style="width: 3em; height: 1.5em;">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- GST Fields Section -->
-          <div id="gstDetailsSection" style="display: none;">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="gstNumber" class="form-label">GST Number <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="gstNumber" placeholder="22AAAAA0000A1Z5">
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="companyName" class="form-label">Company Name <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="companyName" placeholder="Your Company Name">
-              </div>
-              <div class="col-md-12 mb-3">
-                <label for="companyAddress" class="form-label">Company Address <span class="text-danger">*</span></label>
-                <textarea class="form-control" id="companyAddress" rows="2" placeholder="Company full address"></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Footer: Button Row -->
-      <div class="modal-footer justify-content-end gap-2">
-        <button class="btn btn-outline-secondary fw-bold d-flex align-items-center gap-2" data-bs-dismiss="modal">
-          <i class="mdi mdi-close-circle-outline fs-5"></i> Cancel
-        </button>
-        <button onclick="startRazorpayPayment()" id="payNowBtn"
-                class="btn btn-primary fw-bold d-flex align-items-center gap-2">
-          <i class="mdi mdi-credit-card-outline fs-5"></i> Pay ₹<span id="payAmountPreview">0.00</span>
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
-
-<!-- Payment Success Modal -->
-<div class="modal fade" id="paymentSuccessModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered text-center">
-    <div class="modal-content p-4">
-      <div class="modal-body">
-        <img src="{% static 'images/samples/1280x768/success.gif' %}" alt="Success GIF" class="img-fluid mb-3" style="max-height: 200px;">
-        <h4 class="text-success fw-bold">Payment Successful!</h4>
-        <p class="text-muted">Thank you for your payment. Your trip is confirmed.</p>
-        <button class="btn btn-success mt-3 px-4" onclick="closePaymentModal()">Continue</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 
 <div class="modal fade" id="driverSelectionModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">

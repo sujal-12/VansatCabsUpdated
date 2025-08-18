@@ -1,141 +1,110 @@
 {% load static %}
 {% block sidebar %}
-<!-- Sidebar -->
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
         {% if user.is_authenticated %}
-        {% if user.username == 'admin@gmail.com' %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'admin_dashboard' %}">
-                <i class="icon-grid menu-icon"></i>
-                <span class="menu-title">Main Dashboard</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'add_node' %}">
-                <i class="mdi mdi-lan-connect menu-icon"></i>
-                <span class="menu-title">Nodes</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'employee' %}">
-                <i class="mdi mdi-account-multiple menu-icon"></i>
-                <span class="menu-title">Employees</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'trips' %}">
-                <i class="mdi mdi-taxi menu-icon"></i>
-                <span class="menu-title">Trips</span>
-            </a>
-        </li>
-        {% if nodes %}
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false"
-                aria-controls="ui-basic">
-                <i class="mdi mdi-laptop menu-icon"></i>
-                <span class="menu-title">Node Dashboards</span>
-                <i class="menu-arrow"></i>
-            </a>
-            <div class="collapse" id="ui-basic">
-                <ul class="nav flex-column sub-menu">
-                    {% for node in nodes %}
-                    <li class="nav-item"><a class="nav-link"
-                            href="{% url 'node_dashboard' node.nodeID %}">{{node.nodeInitials}} - {{ node.nodeCity}}
-                        </a></li>
-                    {% endfor %}
 
-                </ul>
-            </div>
-        </li>
+            {% if user.username == 'admin@gmail.com' %}
+                <!-- Admin full access -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                        <i class="icon-grid menu-icon"></i>
+                        <span class="menu-title">Main Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'add_node' %}">
+                        <i class="mdi mdi-lan-connect menu-icon"></i>
+                        <span class="menu-title">Nodes</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'employee' %}">
+                        <i class="mdi mdi-account-multiple menu-icon"></i>
+                        <span class="menu-title">Employees</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'trips' %}">
+                        <i class="mdi mdi-taxi menu-icon"></i>
+                        <span class="menu-title">Trips</span>
+                    </a>
+                </li>
 
-        {% endif %}
-        {% if node %}
-        <hr class="sidebar-divider">
-        <label class="sidebar-heading">{{ node.nodeCity }} Node</label>
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-                <i class="mdi mdi-laptop menu-icon"></i>
-                <span class="menu-title">{{ node.nodeCity }} Node </span>
-                <i class="menu-arrow"></i>
-            </a>
-            {% comment %} <div class="collapse" id="auth">
-                <ul class="nav flex-column sub-menu">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'node_tariff' node.nodeID %}">Tariff Structure
-                        </a></li>
+                <!-- Node Dashboards for Admin (always show, even if nodes is not passed) -->
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#all-nodes" aria-expanded="false" aria-controls="all-nodes">
+                        <i class="mdi mdi-laptop menu-icon"></i>
+                        <span class="menu-title">Node Dashboards</span>
+                        <i class="menu-arrow"></i>
+                    </a>
+                    <div class="collapse" id="all-nodes">
+                        <ul class="nav flex-column sub-menu">
+                            {% if nodes %}
+                                {% for node_item in nodes %}
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'node_dashboard' node_item.nodeID %}">
+                                            {{ node_item.nodeInitials }} - {{ node_item.nodeCity }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="nav-item">
+                                        <a class="nav-link" href="{% url 'node_dashboard' node.nodeID %}">
+                                            {{ node.nodeInitials }} - {{ node.nodeCity }}
+                                        </a>
+                                    </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </li>
 
-                </ul>
-            </div> {% endcomment %}
-            <div class="collapse" id="auth">
-                <ul class="nav flex-column sub-menu">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'node_tariff' node.nodeID %}">Tariff Structure
-                        </a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'node_driver' node.nodeID %}">Vehicles</a>
-                    </li>
+                {% if node %}
+                <hr class="sidebar-divider">
+                <label class="sidebar-heading">{{ node.nodeCity }} Node</label>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#node-settings" aria-expanded="false" aria-controls="node-settings">
+                        <i class="mdi mdi-laptop menu-icon"></i>
+                        <span class="menu-title">{{ node.nodeCity }} Node</span>
+                        <i class="menu-arrow"></i>
+                    </a>
+                    <div class="collapse" id="node-settings">
+                        <ul class="nav flex-column sub-menu">
+                            <li class="nav-item"><a class="nav-link" href="{% url 'node_tariff' node.nodeID %}">Tariff Structure</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'node_driver' node.nodeID %}">Vehicles</a></li>
+                        </ul>
+                    </div>
+                </li>
+                {% endif %}
 
-                </ul>
-            </div>
-        </li>
-
-
-        {% comment %} <li class="nav-item">
-            <a class="nav-link" href="{% url 'node_tariff' node.nodeID %}">
-                <i class="icon-grid menu-icon"></i>
-                <span class="menu-title">Tariff Structure</span>
-            </a>
-        </li> {% endcomment %}
-
-
-        {% endif %}
-
-        {% else %}
-
-        {% if node %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'node_dashboard' node.nodeID %}">
-                <i class="icon-grid menu-icon"></i>
-                <span class="menu-title">{{ node.nodeCity}} Dashboard</span>
-            </a>
-        </li>
-        <hr class="sidebar-divider">
-        <label class="sidebar-heading">{{ node.nodeCity }} Node</label>
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-                <i class="mdi mdi-laptop menu-icon"></i>
-                <span class="menu-title">{{ node.nodeCity }} Node </span>
-                <i class="menu-arrow"></i>
-            </a>
-            {% comment %} <div class="collapse" id="auth">
-                <ul class="nav flex-column sub-menu">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'node_tariff' node.nodeID %}">Tariff Structure
-                        </a></li>
-
-                </ul>
-            </div> {% endcomment %}
-            <div class="collapse" id="auth">
-                <ul class="nav flex-column sub-menu">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'node_tariff' node.nodeID %}">Tariff Structure
-                        </a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'node_driver' node.nodeID %}">Vehicles</a>
-                    </li>
-
-                </ul>
-            </div>
-        </li>
-
-        {% endif %}
-
-        {% comment %} <li class="nav-item">
-            <a class="nav-link" href="{% url 'node_tariff' node.nodeID %}">
-                <i class="icon-grid menu-icon"></i>
-                <span class="menu-title">Tariff Structure</span>
-            </a>
-        </li> {% endcomment %}
-
-        {% endif %}
+            {% else %}
+                <!-- Non-admin -->
+                {% if node %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'node_dashboard' node.nodeID %}">
+                        <i class="icon-grid menu-icon"></i>
+                        <span class="menu-title">{{ node.nodeCity }} Dashboard</span>
+                    </a>
+                </li>
+                <hr class="sidebar-divider">
+                <label class="sidebar-heading">{{ node.nodeCity }} Node</label>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#node-settings" aria-expanded="false" aria-controls="node-settings">
+                        <i class="mdi mdi-laptop menu-icon"></i>
+                        <span class="menu-title">{{ node.nodeCity }} Node</span>
+                        <i class="menu-arrow"></i>
+                    </a>
+                    <div class="collapse" id="node-settings">
+                        <ul class="nav flex-column sub-menu">
+                            <li class="nav-item"><a class="nav-link" href="{% url 'node_tariff' node.nodeID %}">Tariff Structure</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'node_driver' node.nodeID %}">Vehicles</a></li>
+                        </ul>
+                    </div>
+                </li>
+                {% endif %}
+            {% endif %}
 
         {% endif %}
     </ul>
 </nav>
-<!-- Sidebar end -->
 {% endblock sidebar %}

@@ -268,6 +268,10 @@ class Trip(models.Model):
     taxes = models.CharField(max_length=10)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
+    payment_status = models.CharField(max_length=100)
+    gst_number = models.CharField(max_length=15)
+    company_name = models.CharField(max_length=100)
+
     # New fields for commissions
     vansat_commission = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     driver_commission = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)

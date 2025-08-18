@@ -25,7 +25,20 @@ import csv
 from datetime import datetime, timedelta
 from .models import Node, Employee
 from django.utils.dateparse import parse_date
+import re
 
+
+# Helper: Map vehicle name from frontend to DB field
+VEHICLE_FIELD_MAP = {
+    "Hatchback": "hatchback",
+    "Sedan": "seden",
+    "Premium Sedan": "premiumSeden",
+    "MUV": "muv",
+    "SUV": "suv",
+    "Premium SUV": "premiumSUV",
+    "AC Traveller": "acTravellar",
+    "Bus": "buses"
+}
 
 logger = logging.getLogger(__name__)
 
@@ -413,7 +426,7 @@ def node_tariff(request, node_id):
     
     elif 'add_airport_tariff' in request.POST:
         name = request.POST['name']
-        kmRange = request.POST['kmRange']
+        kmRange = request.POST['kmRange'].strip()
         hatchback = request.POST['hatchback']
         seden = request.POST['seden']
         premiumSeden = request.POST['premiumSeden']
@@ -433,75 +446,140 @@ def node_tariff(request, node_id):
         cancellationCharges = request.POST['cancellationCharges']
         misleniousCharges = request.POST['misleniousCharges']
 
-        # Convert kmRange to min and max for checking overlaps
-        try:
-            new_km_min, new_km_max = map(int, kmRange.replace(' ', '').split('-'))
-        except:
-            messages.error(request, "Invalid KM Range format. Use 'min-max'.")
-            return redirect("node_tariff", node_id=node_id)
+        # Regex for numeric range like "0-10" or " 11 - 20 "
+        range_re = r'^\s*(\d+)\s*-\s*(\d+)\s*$'
+        m = re.match(range_re, kmRange)
 
-        # Check for existing overlapping range
-        existing = AirportTariff.objects.filter(node=node, name=name)
-        overlap = None
-        for record in existing:
+        if m:
+            # Numeric range path
             try:
-                rec_min, rec_max = map(int, record.kmRange.replace(' ', '').split('-'))
+                new_km_min, new_km_max = map(int, m.groups())
+            except ValueError:
+                messages.error(request, "Invalid KM Range numbers.")
+                return redirect("node_tariff", node_id=node_id)
+            
+
+            # Check for existing overlapping range
+            existing = AirportTariff.objects.filter(node=node, name=name)
+            overlap = None
+            for record in existing:
+                # try parse existing record as numeric; if it isn't numeric, skip it
+                rm = re.match(range_re, (record.kmRange or '').strip())
+                if not rm:
+                    # existing is a named zone; numeric ranges do not conflict with named zones
+                    continue
+                rec_min, rec_max = map(int, rm.groups())
+                # Overlap test: (start1 <= end2) and (start2 <= end1)
                 if not (new_km_max < rec_min or new_km_min > rec_max):
                     overlap = record
                     break
-            except:
-                continue
 
-        if overlap:
-            # Update existing overlapping record
-            overlap.kmRange = kmRange
-            overlap.hatchback = hatchback
-            overlap.seden = seden
-            overlap.premiumSeden = premiumSeden
-            overlap.muv = muv
-            overlap.suv = suv
-            overlap.premiumSUV = premiumSUV
-            overlap.acTravellar = acTravellar
-            overlap.buses = buses
-            overlap.hatchbackWatingCharges = hatchbackWatingCharges
-            overlap.sedenWatingCharges = sedenWatingCharges
-            overlap.premiumSedenWatingCharges = premiumSedenWatingCharges
-            overlap.muvWatingCharges = muvWatingCharges
-            overlap.suvWatingCharges = suvWatingCharges
-            overlap.premiumSUVWatingCharges = premiumSUVWatingCharges
-            overlap.acTravellarWatingCharges = acTravellarWatingCharges
-            overlap.busesWatingCharges = busesWatingCharges
-            overlap.cancellationCharges = cancellationCharges
-            overlap.misleniousCharges = misleniousCharges
-            overlap.save()
-            messages.success(request, "Airport Tariff Updated Successfully...!")
+            if overlap:
+                # Update existing overlapping record
+                overlap.kmRange = kmRange
+                overlap.hatchback = hatchback
+                overlap.seden = seden
+                overlap.premiumSeden = premiumSeden
+                overlap.muv = muv
+                overlap.suv = suv
+                overlap.premiumSUV = premiumSUV
+                overlap.acTravellar = acTravellar
+                overlap.buses = buses
+                overlap.hatchbackWatingCharges = hatchbackWatingCharges
+                overlap.sedenWatingCharges = sedenWatingCharges
+                overlap.premiumSedenWatingCharges = premiumSedenWatingCharges
+                overlap.muvWatingCharges = muvWatingCharges
+                overlap.suvWatingCharges = suvWatingCharges
+                overlap.premiumSUVWatingCharges = premiumSUVWatingCharges
+                overlap.acTravellarWatingCharges = acTravellarWatingCharges
+                overlap.busesWatingCharges = busesWatingCharges
+                overlap.cancellationCharges = cancellationCharges
+                overlap.misleniousCharges = misleniousCharges
+                overlap.save()
+                messages.success(request, "Airport Tariff Updated Successfully...!")
+            else:
+                # No overlapping range – safe to add new
+                new_airport_tariff = AirportTariff(
+                    node=node,
+                    name=name,
+                    kmRange=kmRange,
+                    hatchback=hatchback,
+                    seden=seden,
+                    premiumSeden=premiumSeden,
+                    muv=muv,
+                    suv=suv,
+                    premiumSUV=premiumSUV,
+                    acTravellar=acTravellar,
+                    buses=buses,
+                    hatchbackWatingCharges=hatchbackWatingCharges,
+                    sedenWatingCharges=sedenWatingCharges,
+                    premiumSedenWatingCharges=premiumSedenWatingCharges,
+                    muvWatingCharges=muvWatingCharges,
+                    suvWatingCharges=suvWatingCharges,
+                    premiumSUVWatingCharges=premiumSUVWatingCharges,
+                    acTravellarWatingCharges=acTravellarWatingCharges,
+                    busesWatingCharges=busesWatingCharges,
+                    cancellationCharges=cancellationCharges,
+                    misleniousCharges=misleniousCharges
+                )
+                new_airport_tariff.save()
+                messages.success(request, "Airport Tariff Added Successfully...!")
         else:
-            # No overlapping range – safe to add new
-            new_airport_tariff = AirportTariff(
-                node=node,
-                name=name,
-                kmRange=kmRange,
-                hatchback=hatchback,
-                seden=seden,
-                premiumSeden=premiumSeden,
-                muv=muv,
-                suv=suv,
-                premiumSUV=premiumSUV,
-                acTravellar=acTravellar,
-                buses=buses,
-                hatchbackWatingCharges=hatchbackWatingCharges,
-                sedenWatingCharges=sedenWatingCharges,
-                premiumSedenWatingCharges=premiumSedenWatingCharges,
-                muvWatingCharges=muvWatingCharges,
-                suvWatingCharges=suvWatingCharges,
-                premiumSUVWatingCharges=premiumSUVWatingCharges,
-                acTravellarWatingCharges=acTravellarWatingCharges,
-                busesWatingCharges=busesWatingCharges,
-                cancellationCharges=cancellationCharges,
-                misleniousCharges=misleniousCharges
-            )
-            new_airport_tariff.save()
-            messages.success(request, "Airport Tariff Added Successfully...!")
+            # Named-zone path (e.g. "Mumbai Airport")
+            zone_name = kmRange  # it's just the raw string
+            # check for existing exact zone (case-insensitive)
+            existing_zone = AirportTariff.objects.filter(
+                node=node, name=name, kmRange__iexact=zone_name
+            ).first()
+            if existing_zone:
+                existing_zone.kmRange = kmRange
+                existing_zone.hatchback = hatchback
+                existing_zone.seden = seden
+                existing_zone.premiumSeden = premiumSeden
+                existing_zone.muv = muv
+                existing_zone.suv = suv
+                existing_zone.premiumSUV = premiumSUV
+                existing_zone.acTravellar = acTravellar
+                existing_zone.buses = buses
+                existing_zone.hatchbackWatingCharges = hatchbackWatingCharges
+                existing_zone.sedenWatingCharges = sedenWatingCharges
+                existing_zone.premiumSedenWatingCharges = premiumSedenWatingCharges
+                existing_zone.muvWatingCharges = muvWatingCharges
+                existing_zone.suvWatingCharges = suvWatingCharges
+                existing_zone.premiumSUVWatingCharges = premiumSUVWatingCharges
+                existing_zone.acTravellarWatingCharges = acTravellarWatingCharges
+                existing_zone.busesWatingCharges = busesWatingCharges
+                existing_zone.cancellationCharges = cancellationCharges
+                existing_zone.misleniousCharges = misleniousCharges
+                existing_zone.save()
+                messages.success(request, "Airport Tariff Updated Successfully...!")
+            else:
+                new_airport_tariff = AirportTariff(
+                    node=node,
+                    name=name,
+                    kmRange=kmRange,
+                    hatchback=hatchback,
+                    seden=seden,
+                    premiumSeden=premiumSeden,
+                    muv=muv,
+                    suv=suv,
+                    premiumSUV=premiumSUV,
+                    acTravellar=acTravellar,
+                    buses=buses,
+                    hatchbackWatingCharges=hatchbackWatingCharges,
+                    sedenWatingCharges=sedenWatingCharges,
+                    premiumSedenWatingCharges=premiumSedenWatingCharges,
+                    muvWatingCharges=muvWatingCharges,
+                    suvWatingCharges=suvWatingCharges,
+                    premiumSUVWatingCharges=premiumSUVWatingCharges,
+                    acTravellarWatingCharges=acTravellarWatingCharges,
+                    busesWatingCharges=busesWatingCharges,
+                    cancellationCharges=cancellationCharges,
+                    misleniousCharges=misleniousCharges
+                )
+                new_airport_tariff.save()
+                messages.success(request, "Airport Tariff Added Successfully...!")
+
     
     elif 'add_railway_tariff' in request.POST:
         name = request.POST['name']
@@ -1186,36 +1264,30 @@ def get_outstation_km_ranges(request):
     return JsonResponse({"km_ranges": list(ranges)})
     
 
-def fetch_vehicle_types(request, node_id):
-    # Retrieve distinct vehicle types for the given node_id
-    vehicle_types = DriverRegistration.objects.filter(node=node_id).values_list('vehicletype', flat=True).distinct()
-    return JsonResponse({'vehicle_types': list(vehicle_types)})
+def get_active_vehicle_types(request, node_id):
+    # Filter active drivers for the given node
+    active_drivers = DriverRegistration.objects.filter(
+        node=node_id,
+        is_active=True
+    ).values_list("vehicletype", flat=True).distinct()
+
+    vehicle_types = list(active_drivers)
+    return JsonResponse({"vehicle_types": vehicle_types})
 
 
-def fetch_active_drivers(request):
-    vehicle_type = request.GET.get('vehicle_type', '')
-    query = request.GET.get('query', '')
+def get_available_drivers(request):
+    vehicle_type = request.GET.get("vehicle_type")
+    if not vehicle_type:
+        return JsonResponse({"error": "Vehicle type required"}, status=400)
+    
+    drivers = DriverRegistration.objects.filter(
+        vehicletype=vehicle_type,
+        is_active=True,
+        is_approved=True
+    ).values("id", "driverfirstname", "driverlastname", "drivermobileno", "vehicle_number")
 
-    if vehicle_type:
-        driver_filter = Q(vehicletype__iexact=vehicle_type) & Q(is_active=True)
+    return JsonResponse(list(drivers), safe=False)
 
-        # If query is given, add it to the filter
-        if query:
-            driver_filter &= Q(driverfirstname__icontains=query) | Q(vehicle_number__icontains=query)
-
-        drivers = DriverRegistration.objects.filter(driver_filter).values(
-            'driverfirstname', 'driverlastname', 'drivermobileno', 'vehicle_number', 'vehicle_name'
-        )[:10]  # ⬅️ Limit result if needed
-
-        suggestions = [f"{driver['driverfirstname']} - {driver['vehicle_number']}" for driver in drivers]
-        detailed_data = list(drivers)
-
-        return JsonResponse({
-            'drivers': suggestions,
-            'detailed_data': detailed_data
-        })
-
-    return JsonResponse({'drivers': [], 'detailed_data': []})
 
     
 def fetch_airport_charges(request, node_id):
@@ -1276,16 +1348,14 @@ def fetch_extra_charges(request, node_id):
     })
 
 
-def fetch_holidaytour_packages(request, node_id):
-    query = request.GET.get('query', '')
-    print(f"Fetching holiday tour packages for node {node_id} with query '{query}'")
-    packages = HolidayTourTariff.objects.filter(node__nodeID=node_id)
+def get_holiday_packages(request):
+    node_id = request.GET.get("node_id")
 
-    if query:
-        packages = packages.filter(packageName__icontains=query)
+    if not node_id:
+        return JsonResponse({"error": "Missing node_id"}, status=400)
 
-    suggestions = list(packages.values_list('packageName', flat=True).distinct())
-    return JsonResponse({'packages': suggestions})
+    packages = HolidayTourTariff.objects.filter(node=node_id).values_list('packageName', flat=True).distinct()
+    return JsonResponse({"packages": list(packages)})
 
     
 def fetch_holidaytour_charges(request, node_id):
@@ -1298,11 +1368,17 @@ def fetch_holidaytour_charges(request, node_id):
         return JsonResponse({'error': str(e)})
 
 
-def fetch_hourly_options(request, node_id):
-    tariffs = HourlyRentalTariff.objects.filter(node__nodeID=node_id)
-    options = list(tariffs.values_list('hours', 'kms'))
-    combined = [f"{h} - {k} KM" for h, k in options]
-    return JsonResponse({'options': combined})
+def get_hourly_rental_options(request):
+    node_id = request.GET.get("node_id")
+
+    if not node_id:
+        return JsonResponse({"error": "Missing node_id"}, status=400)
+
+    data = HourlyRentalTariff.objects.filter(node=node_id).values("hours", "kms").distinct()
+
+    options = [f"{item['hours']} hrs - {item['kms']} km" for item in data]
+
+    return JsonResponse({"options": options})
 
 
 def fetch_hourly_charges(request, node_id):
@@ -1347,16 +1423,87 @@ def fetch_railway_charges(request, node_id):
         return JsonResponse({'error': str(e)})
 
 
-def generate_booking_id(request):
-    base_id = request.GET.get('base_id', '')
-    if not base_id:
-        return JsonResponse({'status': 'error', 'message': 'Base ID missing'}, status=400)
+def generate_trip_id_api(request):
+    node_id = request.GET.get("node_id")
+    trip_type = request.GET.get("trip_type")
 
-    count = Trip.objects.filter(booking_id__startswith=base_id).count() + 1
-    counter = str(count).zfill(3)  # e.g., 001
-    booking_id = base_id + counter
+    if not node_id or not trip_type:
+        return JsonResponse({"error": "Missing parameters"}, status=400)
 
-    return JsonResponse({'status': 'success', 'booking_id': booking_id})
+    try:
+        node = Node.objects.get(pk=node_id)
+    except Node.DoesNotExist:
+        return JsonResponse({"error": "Node not found"}, status=404)
+
+    # Map trip type to initials
+    trip_type_map = {
+        "Airport Transfer": "AT",
+        "Outstation": "OT",
+        "Hourly Rental": "HR",
+        "Holiday Tour": "HT",
+        "Railway Transfer": "RT"
+    }
+
+    trip_type_initials = trip_type_map.get(trip_type, "XX")
+    today_str = datetime.now().strftime("%d%m%Y")
+    prefix = f"{node.nodeInitials}{trip_type_initials}{today_str}"
+
+    # Find latest trip with this prefix
+    existing = Trip.objects.filter(booking_id__startswith=prefix).order_by('-booking_id')
+    if existing.exists():
+        last_trip_id = existing.first().booking_id
+        last_suffix = int(last_trip_id[-3:])
+        new_suffix = str(last_suffix + 1).zfill(3)
+    else:
+        new_suffix = "001"
+
+    trip_id = prefix + new_suffix
+    return JsonResponse({"trip_id": trip_id})
+
+def generate_future_trip_id_api(request):
+    node_id = request.GET.get("node_id")
+    trip_type = request.GET.get("trip_type")
+    trip_date_str = request.GET.get("trip_date")  # Expected format: YYYY-MM-DD
+
+    if not node_id or not trip_type or not trip_date_str:
+        return JsonResponse({"error": "Missing parameters"}, status=400)
+
+    try:
+        node = Node.objects.get(pk=node_id)
+    except Node.DoesNotExist:
+        return JsonResponse({"error": "Node not found"}, status=404)
+
+    # Map trip type to initials
+    trip_type_map = {
+        "Airport Transfer": "AT",
+        "Outstation": "OT",
+        "Hourly Rental": "HR",
+        "Holiday Tour": "HT",
+        "Railway Transfer": "RT"
+    }
+
+    trip_type_initials = trip_type_map.get(trip_type, "XX")
+
+    # Convert input date (YYYY-MM-DD) to DDMMYYYY
+    try:
+        trip_date = datetime.strptime(trip_date_str, "%Y-%m-%d")
+    except ValueError:
+        return JsonResponse({"error": "Invalid date format, use YYYY-MM-DD"}, status=400)
+
+    date_str = trip_date.strftime("%d%m%Y")
+    prefix = f"{node.nodeInitials}{trip_type_initials}{date_str}"
+
+    # Find latest trip with this prefix
+    existing = Trip.objects.filter(booking_id__startswith=prefix).order_by('-booking_id')
+    if existing.exists():
+        last_trip_id = existing.first().booking_id
+        last_suffix = int(last_trip_id[-3:])
+        new_suffix = str(last_suffix + 1).zfill(3)
+    else:
+        new_suffix = "001"
+
+    trip_id = prefix + new_suffix
+    return JsonResponse({"trip_id": trip_id})
 
 
 #----------------- Trip and OTP Management -----------------
@@ -1420,38 +1567,45 @@ def save_trip_after_payment(request):
         try:
             data = json.loads(request.body)
 
-            otp = generate_otp()
             trip = Trip.objects.create(
-                date=data['date'],
-                time=data['time'],
-                booking_id=safe_value(data.get('booking_id')),
-                passenger_name=safe_value(data.get('passenger_name')),
-                contact_number=safe_value(data.get('contact_number')),
-                email_id=safe_value(data.get('email_id')),
-                otp=otp,
-                from_city=safe_value(data.get('from_city')),
-                to_city=safe_value(data.get('to_city')),
-                vehicle_type=safe_value(data.get('vehicle_type')),
-                driver_name=safe_value(data.get('driver_name')),
-                vehicle_number=safe_value(data.get('vehicle_number')),
-                driver_contact=safe_value(data.get('driver_contact')),
-                payment_type=safe_value(data.get('payment_type')),
-                base_fare=data.get('base_fare') or 0,
-                discount=data.get('discount') or 0,
-                terminal_charges=data.get('terminal_charges') or 0,
-                surcharges=data.get('surcharges') or 0,
-                taxes=safe_value(data.get('taxes')),
-                total_amount=data.get('total_amount') or 0,
-                status="Pending",
-                extra_charges=data.get('extra_charges') or {},
-                extra_total=data.get('extra_total') or 0,
-                
+                date=datetime.strptime(data.get("date"), "%d-%m-%Y").date(),
+                time=datetime.strptime(data.get("time"), "%I:%M %p").time(),
+                booking_id=data.get("tripId", ""),
+                passenger_name=data.get("passenger_name", ""),
+                contact_number=data.get("contact_number", ""),
+                email_id=data.get("email_id", ""),
+                otp=generate_otp(),
+                otp_verified=False,
+                from_city=data.get("from_city", ""),
+                to_city=data.get("to_city", ""),
+                vehicle_type=data.get("vehicle_type", ""),
+                driver_name=data.get("driver_name", ""),
+                vehicle_number=data.get("vehicle_number", ""),
+                driver_contact=data.get("driver_contact", ""),
+                payment_type=data.get("payment_type", ""),
+                base_fare=data.get("base_fare", 0),
+                discount=data.get("discount", 0),
+                terminal_charges=data.get("terminal_charges", 0),
+                surcharges=data.get("surcharges", 0),
+                taxes=data.get("taxes", ""),
+                total_amount=data.get("total_amount", 0),
+                payment_status=data.get("payment_status", ""),
+                gst_number=data.get("gst_number", ""),
+                company_name=data.get("company_name", ""),
+                company_address = data.get("company_address", ""),
+                vansat_commission=data.get("vansat_commission"),
+                driver_commission=data.get("driver_commission"),
+                extra_charges=data.get("extra_charges"),
+                extra_total=data.get("extra_total"),
+                status="Pending"
             )
 
-            return JsonResponse({'success': True, 'trip_id': trip.id, 'otp': otp})
+            return JsonResponse({"success": True, "booking_id": trip.booking_id, "otp" : trip.otp})
+        
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
 
+    return JsonResponse({"error": "Invalid request"}, status=405)
 
 # from django.shortcuts import render, get_object_or_404, redirect
 # from django.views.decorators.csrf import csrf_exempt
@@ -1649,3 +1803,163 @@ def update_trip_driver(request):
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
+        
+def airport_suggestions(request):
+    node_id = request.GET.get("node_id")
+    if not node_id:
+        return JsonResponse({"error": "Missing node_id"}, status=400)
+
+    # Get all tariffs for the node
+    tariffs = AirportTariff.objects.filter(node_id=node_id)
+
+    # Only keep named airports (exclude numeric ranges)
+    named_airports = [
+        t.kmRange for t in tariffs
+        if not re.match(r"^\s*\d+\s*-\s*\d+\s*$", t.kmRange)
+    ]
+
+    return JsonResponse({"suggestions": named_airports})
+
+
+def fetch_vehicle_types(request, trip_type, node_id):
+    active_drivers = DriverRegistration.objects.filter(
+        node=node_id,
+        is_active=True
+    ).values_list("vehicletype", flat=True).distinct()
+
+    vehicle_types = list(active_drivers)
+
+    return JsonResponse({"vehicle_types": vehicle_types})
+
+
+def get_outstation_km_ranges(request, node_id):
+    """
+    Return all distinct kmRange values from OutstationTariff for a given node.
+    """
+    km_ranges = OutstationTariff.objects.filter(node_id=node_id)\
+        .values_list("kmRange", flat=True)\
+        .distinct()
+
+    return JsonResponse({"km_ranges": list(km_ranges)})
+
+
+def get_tariff_details(request, node_id, km_range, vehicle_type):
+    """
+    Returns tariff details for a given node, KM range, and vehicle type.
+    For Outstation, frontend will calculate: Estimated Distance × 2 × rate_per_km.
+    """
+    trip_type = request.GET.get("trip_type", "").lower()
+    if not trip_type:
+        return JsonResponse({"error": "Trip type is required"}, status=400)
+
+    # Vehicle field name same as DB column
+    vehicle_field = vehicle_type
+    if not vehicle_field:
+        return JsonResponse({"error": f"Invalid vehicle type: {vehicle_type}"}, status=400)
+
+    # Select model based on trip type
+    if trip_type == "airport transfer":
+        tariff_model = AirportTariff
+        filter_kwargs = {"node_id": node_id, "kmRange": km_range}
+    elif trip_type == "outstation":
+        tariff_model = OutstationTariff
+        filter_kwargs = {"node_id": node_id, "kmRange": km_range}
+    elif trip_type == "railway transfer":
+        tariff_model = RailwayTariff
+        filter_kwargs = {"node_id": node_id}
+    elif trip_type == "holiday tour":
+        tariff_model = HolidayTourTariff
+        filter_kwargs = {"node_id": node_id}
+    elif trip_type == "hourly rental":
+        tariff_model = HourlyRentalTariff
+        filter_kwargs = {"node_id": node_id}
+    else:
+        return JsonResponse({"error": f"Unsupported trip type: {trip_type}"}, status=400)
+
+    # Fetch tariff
+    tariff_obj = tariff_model.objects.filter(**filter_kwargs).first()
+    if not tariff_obj:
+        return JsonResponse({"error": "No tariff found for given details"}, status=404)
+
+    # Check vehicle type exists
+    if not hasattr(tariff_obj, vehicle_field):
+        return JsonResponse({"error": f"Invalid vehicle type: {vehicle_type}"}, status=400)
+
+    rate_per_km = getattr(tariff_obj, vehicle_field)
+
+    # Get fixed tariff values
+    fixed_obj = get_object_or_404(FixedTariff, node_id=node_id)
+
+    return JsonResponse({
+        "fixedTerminalCharges": fixed_obj.fixedTerminalCharges,
+        "fixedSurCharges": fixed_obj.fixedSurCharges,
+        "fixedTax": fixed_obj.fixedTax,
+        "ratePerKm": rate_per_km  # return base rate, frontend will calculate tariff
+    })
+
+def update_trip_driver(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            trip_id = data.get("trip_id")
+            driver_name = data.get("driver_name")
+            driver_contact = data.get("driver_contact")
+            vehicle_no = data.get("vehicle_number")
+
+            trip = Trip.objects.get(booking_id=trip_id)
+
+            # Optionally get the driver object if you need validation
+            driver = DriverRegistration.objects.filter(
+                driverfirstname__iexact=driver_name.split()[0],
+                driverlastname__iexact=driver_name.split()[-1],
+                drivermobileno=driver_contact
+            ).first()
+
+            trip.driver_name = driver_name
+            trip.driver_contact = driver_contact
+            trip.vehicle_number = vehicle_no
+            trip.save()
+
+            return JsonResponse({"status": "success", "message": "Driver assigned successfully"})
+        except Trip.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Trip not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+    return JsonResponse({"status": "error", "message": "Invalid request method"}, status=405)
+
+
+def get_trip_details(request, tripId):
+    """
+    Returns latest trip details as JSON for printing
+    """
+    trip = get_object_or_404(Trip, booking_id=tripId)
+
+    trip_data = {
+        "booking_id": trip.booking_id,
+        "passenger_name": trip.passenger_name,
+        "contact_number": trip.contact_number,
+        "email_id": trip.email_id,
+        "company_name": trip.company_name,
+        "company_address": trip.company_address,
+        "gst_number": trip.gst_number,
+        "date": trip.date.strftime("%d-%m-%Y") if trip.date else "",
+        "time": trip.time.strftime("%I:%M %p") if trip.time else "",
+        "from_city": trip.from_city,
+        "to_city": trip.to_city,
+        "vehicle_type": trip.vehicle_type,
+        "vehicle_number": trip.vehicle_number,
+        "driver_name": trip.driver_name,
+        "driver_contact": trip.driver_contact,
+        "payment_type": trip.payment_type,
+        "payment_status": trip.payment_status,
+        "base_fare": trip.base_fare,
+        "discount": trip.discount,
+        "terminal_charges": trip.terminal_charges,
+        "surcharges": trip.surcharges,
+        "taxes": trip.taxes,
+        "total_amount": trip.total_amount,
+        "otp": trip.otp,
+    }
+
+    return JsonResponse(trip_data)

@@ -3,6 +3,13 @@ let extraCharges = 0, discount = 0;
 let stepStarted = false;
 let pendingTripMode = null;
 
+
+/*
+#####################################################################################################
+                          Main Code
+#####################################################################################################
+*/
+
 const liveTripBtn = document.getElementById("liveTripBtn");
 const futureTripBtn = document.getElementById("futureTripBtn");
 
@@ -61,7 +68,7 @@ function confirmTripReset() {
 
 function clearStepOneSection() {
     const stepOneSection = document.getElementById("stepOneSection");
-    const tripDetailsSection = document.getElementById("tripDetailsSection");3
+    const tripDetailsSection = document.getElementById("tripDetailsSection"); 3
 
     if (stepOneSection) {
         stepOneSection.style.display = "none";
@@ -165,7 +172,9 @@ function handleTripTypeSelection(tripType, button) {
                     </div>
                     <div id="suggestionsBox" class="mt-2"></div>
                 </div>
+                
             </div>
+            
         `;
         // Render airport transfer form
         renderAirportTransferForm();
@@ -200,7 +209,7 @@ function handleTripTypeSelection(tripType, button) {
                         title="Clear Destination"></i>
                     </div>
                     <div class="col-md-12 position-relative" id="nextStepContainer">
-                        <button class="btn btn-dark w-100 mt-2 d-flex justify-content-between align-items-center" id="nextStepBtn" onclick="handleOutstationDistanceSuccess()" disabled>
+                        <button class="btn btn-dark w-100 mt-2 d-flex justify-content-between align-items-center" id="nextStepBtn" onclick="calculateOutstationDistance()" disabled>
                             <span class="fw-bold">Select Location</span>
                             <i class="mdi mdi-arrow-right" style="font-size: 24px;"></i>
                         </button>
@@ -208,6 +217,7 @@ function handleTripTypeSelection(tripType, button) {
                     <div id="suggestionsBox" class="mt-2"></div>
                 </div>
             </div>
+            
         `;
 
         setTimeout(() => {
@@ -305,42 +315,122 @@ function renderAirportTransferForm() {
     const fromLat = parseFloat(window.nodeLatitude) || 0;
     const fromLng = parseFloat(window.nodeLongitude) || 0;
     const existingSlab = document.getElementById("kmSlabSection");
-    
+
     let html = "";
 
     if (selectedTripMode === "live") {
         html += `
-            <div class="row mb-3">
-                <div class="col-md-3">
+           <div class="container p-3" id="tripDetailsSection">
+                <!-- Row 1: Date, Time, Trip Type -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
                     <label class="form-label">Current Date</label>
                     <h5 class="text-primary fw-bold">${currentDate}</h5>
-                </div>
-                <div class="col-md-3">
+                    </div>
+                    <div class="col-md-3">
                     <label class="form-label">Current Time</label>
                     <h5 class="text-primary fw-bold">${currentTime}</h5>
+                    </div>
+                    <div class="col-md-6">
+                    <label class="form-label text-primary fw-bold">Trip Type</label>
+                    <h5 class="text-primary fw-bold">${selectedTripType} (Live)</h5>
+                    <p class="fw-bold text-muted mb-0">Trip ID: NSKAT${Date.now()}</p>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label text-primary fw-bold">Trip Type : ${selectedTripType}</label>
-                    <h5 class="text-primary fw-bold">Trip ID: NSKAT17072025001</h5>
+
+                <!-- Row 2: From / To Address -->
+                <div class="row mb-3" id="mapDistanceRow">
+                    <div class="col-md-4">
+                    <label class="form-label fw-bold">From (Node)</label>
+                    <p id="fromAddress">${fromAddress}</p>
+                    <small id="fromCoords" class="text-muted">Lat: ${fromLat}, Lng: ${fromLng}</small>
+                    </div>
+                    <div class="col-md-4">
+                    <label class="form-label fw-bold">To (Destination)</label>
+                    <p id="toAddress">${destination}</p>
+                    <small id="toCoords" class="text-muted">Lat: ---, Lng: ---</small>
+                    </div>
+                    <div class="col-md-4">
+                    <label class="form-label fw-bold">Estimated Distance</label>
+                    <h5 id="estimatedDistance" class="text-success fw-bold">Calculating...</h5>
+                    </div>
+                </div>
+
+                <!-- Row 3: Tariff Details -->
+                <div class="row mt-2" id="tariffDetailsRow">
+                    <div class="col-md-3">
+                    <label class="form-label fw-bold">Terminal Charges</label>
+                    <h4 class="text-success">₹ ${parseFloat(terminal).toFixed(2)}</h4>
+                    </div>
+                    <div class="col-md-3">
+                    <label class="form-label fw-bold">Surcharges</label>
+                    <h4 class="text-success">₹ ${parseFloat(surcharge).toFixed(2)}</h4>
+                    </div>
+                    <div class="col-md-3">
+                    <label class="form-label fw-bold">Tax (%)</label>
+                    <h4 class="text-success">${parseFloat(taxPercent).toFixed(2)}%</h4>
+                    </div>
+                    <div class="col-md-3">
+                    <label class="form-label fw-bold">Vehicle Tariff</label>
+                    <h4 class="text-primary fw-bold">₹ ${parseFloat(baseTariff).toFixed(2)}</h4>
+                    </div>
+                </div>
+
+                <!-- Row 4: Extra & Discount -->
+                <div class="row mt-3" id="additionalChargesRow">
+                    <div class="col-md-4">
+                    <label class="form-label fw-bold">Extra Charges (₹)</label>
+                    <div class="input-group">
+                        <span class="input-group-text fw-bold text-dark fs-4" style="cursor:pointer;" onclick="adjustCharge('extraChargesInput', -50)">−</span>
+                        <input type="number" class="form-control text-center" id="extraChargesInput" value="0" min="0" />
+                        <span class="input-group-text fw-bold text-dark fs-4" style="cursor:pointer;" onclick="adjustCharge('extraChargesInput', 50)">+</span>
+                    </div>
+                    </div>
+                    <div class="col-md-4">
+                    <label class="form-label fw-bold">Discount (₹)</label>
+                    <div class="input-group">
+                        <span class="input-group-text fw-bold text-dark fs-4" style="cursor:pointer;" onclick="adjustCharge('discountInput', -50)">−</span>
+                        <input type="number" class="form-control text-center" id="discountInput" value="0" min="0" />
+                        <span class="input-group-text fw-bold text-dark fs-4" style="cursor:pointer;" onclick="adjustCharge('discountInput', 50)">+</span>
+                    </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                    <div>
+                        <label class="form-label fw-bold">Total Amount (₹)</label>
+                        <h3 id="totalAmountDisplay" class="text-dark fw-bold">--</h3>
+                    </div>
+                    </div>
+                </div>
+
+                <!-- Row 5: Action Buttons -->
+                <div class="row mt-4" id="actionButtonsRow">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                    <button class="btn btn-primary w-100 h-100 d-flex align-items-center gap-3 action-button">
+                        <i class="mdi mdi-briefcase-outline action-icon"></i>
+                        <span class="action-text">Book Business Trip</span>
+                    </button>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                    <button class="btn btn-primary w-100 h-100 d-flex align-items-center gap-3 action-button" onclick="payCashNow()">
+                        <i class="mdi mdi-cash action-icon"></i>
+                        <span class="action-text">Pay Cash</span>
+                    </button>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                    <button class="btn btn-primary w-100 h-100 d-flex align-items-center gap-3 action-button">
+                        <i class="mdi mdi-truck-delivery-outline action-icon"></i>
+                        <span class="action-text">Pay Cash on Delivery</span>
+                    </button>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                    <button class="btn btn-primary w-100 h-100 d-flex align-items-center gap-3 action-button" data-bs-toggle="modal" data-bs-target="#razorpayUserModal">
+                        <i class="mdi mdi-credit-card-outline action-icon"></i>
+                        <span class="action-text">Pay Online / Card</span>
+                    </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="row mb-3" id="mapDistanceRow">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">From (Node)</label>
-                    <p id="fromAddress">${fromAddress}</p>
-                    <small id="fromCoords" class="text-muted" style="display: none;">Lat: ${fromLat}, Lng: ${fromLng}</small>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">To (Destination)</label>
-                    <p id="toAddress">${destination}</p>
-                    <small id="toCoords" class="text-muted" style="display: none;">Lat: ---, Lng: ---</small>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Estimated Distance</label>
-                    <h5 id="estimatedDistance" class="text-success">Calculating...</h5>
-                </div>
-            </div>
         `;
 
         tripDetails.innerHTML = html;
@@ -502,7 +592,7 @@ function calculateDistanceBetweenPoints(destinationAddress) {
             }, function (response, status) {
                 if (status === "OK") {
                     const distanceText = response.rows[0].elements[0].distance.text;
-                    
+
 
                     document.getElementById("estimatedDistance").textContent = distanceText;
                     const distanceKm = parseFloat(distanceText.split(" ")[0]);
@@ -510,7 +600,7 @@ function calculateDistanceBetweenPoints(destinationAddress) {
                     // ✅ Replace the Next Step button with vehicle selection
                     showVehicleSelection(distanceKm);
 
-                    
+
 
                 } else {
                     document.getElementById("estimatedDistance").textContent = "Distance unavailable";
@@ -652,7 +742,7 @@ function selectVehicle(type) {
 
 
 function fetchKmRangesAndShowButtons(distanceInKm) {
-    
+
     const container = document.getElementById("nextStepContainer");
 
     fetch(`/get-km-ranges/${window.nodeId}/`)
@@ -730,7 +820,7 @@ function tryShowTariffDetails() {
 
     const vehicleField = vehicleKeyMap[selectedVehicleType];
     const kmRangeEncoded = encodeURIComponent(selectedKmRange);
-    
+
     console.log("Fetching tariff details for:", {})
     fetch(`/get-tariff-details/${window.nodeId}/${kmRangeEncoded}/${selectedVehicleType}/`)
         .then(response => response.json())
@@ -910,62 +1000,62 @@ function startRazorpayPayment() {
         description: "Trip Payment",
 
         handler: function (response) {
-        console.log("✅ Payment Successful!", response);
+            console.log("✅ Payment Successful!", response);
 
-        const payload = {
-            date: new Date().toISOString().split('T')[0],
-            time: new Date().toTimeString().split(' ')[0],
-            booking_id: "NSKAT" + Date.now(),
+            const payload = {
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toTimeString().split(' ')[0],
+                booking_id: "NSKAT" + Date.now(),
 
-            passenger_name: name,
-            contact_number: contact,
-            email_id: email,
+                passenger_name: name,
+                contact_number: contact,
+                email_id: email,
 
-            from_city: document.getElementById("fromAddress")?.textContent || "-",
-            to_city: document.getElementById("toAddress")?.textContent || "-",
-            vehicle_type: selectedVehicleType || "-",
-            driver_name: selectedDriver?.driverfirstname + " " + selectedDriver?.driverlastname || "-",
-            vehicle_number: selectedDriver?.vehicle_number || "-",
-            driver_contact: selectedDriver?.driver_contact || "-",
+                from_city: document.getElementById("fromAddress")?.textContent || "-",
+                to_city: document.getElementById("toAddress")?.textContent || "-",
+                vehicle_type: selectedVehicleType || "-",
+                driver_name: selectedDriver?.driverfirstname + " " + selectedDriver?.driverlastname || "-",
+                vehicle_number: selectedDriver?.vehicle_number || "-",
+                driver_contact: selectedDriver?.driver_contact || "-",
 
-            payment_type: "Online",
-            base_fare: baseTariff || 0,
-            discount: discount || 0,
-            terminal_charges: terminal || 0,
-            surcharges: surcharge || 0,
-            taxes: taxPercent?.toString() || "0",
-            total_amount: totalAmount || 0.0,
-            extra_charges: {},
-            extra_total: extraCharges || 0
-        };
+                payment_type: "Online",
+                base_fare: baseTariff || 0,
+                discount: discount || 0,
+                terminal_charges: terminal || 0,
+                surcharges: surcharge || 0,
+                taxes: taxPercent?.toString() || "0",
+                total_amount: totalAmount || 0.0,
+                extra_charges: {},
+                extra_total: extraCharges || 0
+            };
 
-        fetch("/save-trip/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCSRFToken()
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert("Trip saved successfully! OTP: " + data.otp);
+            fetch("/save-trip/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken()
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Trip saved successfully! OTP: " + data.otp);
 
-                // ✅ Payload is available here
-                showTripSummaryModal(payload);
+                        // ✅ Payload is available here
+                        showTripSummaryModal(payload);
 
-                const modalEl = document.getElementById('tripSummaryModal');
-                const summaryModal = new bootstrap.Modal(modalEl);
-                summaryModal.show();
-            } else {
-                alert("Error saving trip: " + data.error);
-            }
-        })
-        .catch(err => {
-            console.error("Error during save:", err);
-        });
-    },
+                        const modalEl = document.getElementById('tripSummaryModal');
+                        const summaryModal = new bootstrap.Modal(modalEl);
+                        summaryModal.show();
+                    } else {
+                        alert("Error saving trip: " + data.error);
+                    }
+                })
+                .catch(err => {
+                    console.error("Error during save:", err);
+                });
+        },
 
         prefill: {
             name: name,
@@ -988,8 +1078,8 @@ function startRazorpayPayment() {
 
 
 function toggleGSTFields() {
-  const section = document.getElementById('gstDetailsSection');
-  section.style.display = document.getElementById('gstToggle').checked ? 'block' : 'none';
+    const section = document.getElementById('gstDetailsSection');
+    section.style.display = document.getElementById('gstToggle').checked ? 'block' : 'none';
 }
 
 
@@ -1096,23 +1186,23 @@ let selectedDriver = null;
 function fetchDrivers(vehicleType, query = '') {
 
     const vehicleKeyMap = {
-            'Hatchback': 'hatchback',
-            'Sedan': 'seden',
-            'Premium Sedan': 'premiumSeden',
-            'MUV': 'muv',
-            'SUV': 'suv',
-            'Premium SUV': 'premiumSUV',
-            'AC Traveller': 'acTravellar',
-            'Bus': 'buses'
-        };
-  const url = `/fetch-active-drivers/?vehicle_type=${encodeURIComponent(vehicleType)}&query=${encodeURIComponent(query)}`;
+        'Hatchback': 'hatchback',
+        'Sedan': 'seden',
+        'Premium Sedan': 'premiumSeden',
+        'MUV': 'muv',
+        'SUV': 'suv',
+        'Premium SUV': 'premiumSUV',
+        'AC Traveller': 'acTravellar',
+        'Bus': 'buses'
+    };
+    const url = `/fetch-active-drivers/?vehicle_type=${encodeURIComponent(vehicleType)}&query=${encodeURIComponent(query)}`;
 
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      renderDriverSuggestions(data.detailed_data);
-    })
-    .catch(err => console.error("Driver fetch error:", err));
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            renderDriverSuggestions(data.detailed_data);
+        })
+        .catch(err => console.error("Driver fetch error:", err));
 }
 
 function renderDriverSuggestions(drivers) {
@@ -1150,9 +1240,9 @@ function renderDriverSuggestions(drivers) {
 }
 
 function searchDrivers() {
-  const query = document.getElementById("driverSearchInput").value;
-  const vehicleType = selectedVehicleType || "";
-  fetchDrivers(vehicleType, query);
+    const query = document.getElementById("driverSearchInput").value;
+    const vehicleType = selectedVehicleType || "";
+    fetchDrivers(vehicleType, query);
 }
 
 
@@ -1176,13 +1266,22 @@ function initGoogleAutocompleteForOutstation() {
 }
 
 function renderOutstationForm() {
+    const tripDetails = document.getElementById("tripDetailsSection");
     const container = document.getElementById("nextStepContainer");
-    container.innerHTML = `
-        <div class="mt-3">
-            <p class="text-success">Outstation destination selected. Now continue to next step...</p>
-            <!-- Add your next-step UI here -->
-        </div>
-    `;
+    const destination = document.getElementById("destination")?.value;
+    if (!destination) {
+        tripDetails.innerHTML = `<p class="text-danger">Destination is empty. Please Select Destination within the City Limits.</p>`;
+        return;
+    }
+    else {
+        container.innerHTML = `
+            <div class="mt-3">
+                <p class="text-success">Outstation destination selected. Now continue to next step...</p>
+                <!-- Add your next-step UI here -->
+            </div>
+        `;
+    }
+
 }
 
 function attachOutstationSuggestionBox() {
@@ -1305,82 +1404,82 @@ function selectOutstationDestination(destination) {
 }
 
 function selectDriver(driver) {
-  selectedDriver = driver;
+    selectedDriver = driver;
 
-  const input = document.getElementById("driverSearchInput");
-  if (input) {
-    input.value = `${driver.driverfirstname} ${driver.driverlastname} - ${driver.vehicle_number}`;
-  }
+    const input = document.getElementById("driverSearchInput");
+    if (input) {
+        input.value = `${driver.driverfirstname} ${driver.driverlastname} - ${driver.vehicle_number}`;
+    }
 
-  document.getElementById("driverSuggestions").innerHTML = "";
+    document.getElementById("driverSuggestions").innerHTML = "";
 
-  // ✅ Show the Save Trip button
-  document.getElementById("saveTripBtn").style.display = "block";
+    // ✅ Show the Save Trip button
+    document.getElementById("saveTripBtn").style.display = "block";
 }
 
 function finalizeTripWithDriver() {
-  if (!selectedDriver || !selectedDriver.driverfirstname) {
-    alert("No driver selected.");
-    return;
-  }
-
-  // Get the latest trip ID or booking_id — if saved via Razorpay handler
-  const bookingId = document.getElementById('summaryTripId').textContent;
-
-  // Prepare payload to update trip
-  const payload = {
-    booking_id: bookingId,
-    driver_name: selectedDriver.driverfirstname + " " + selectedDriver.driverlastname,
-    vehicle_number: selectedDriver.vehicle_number,
-    driver_contact: selectedDriver.driver_contact
-  };
-
-  fetch("/update-driver/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": getCSRFToken()
-    },
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-        alert("✅ Trip updated with selected driver!");
-
-        // Close modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById("tripSummaryModal"));
-        if (modal) modal.hide();
-
-        // Show receipt and redirect
-        showAndPrintTripReceipt(window.nodeId);
-    } else {
-        alert("❌ Failed to save trip: " + data.error);
+    if (!selectedDriver || !selectedDriver.driverfirstname) {
+        alert("No driver selected.");
+        return;
     }
+
+    // Get the latest trip ID or booking_id — if saved via Razorpay handler
+    const bookingId = document.getElementById('summaryTripId').textContent;
+
+    // Prepare payload to update trip
+    const payload = {
+        booking_id: bookingId,
+        driver_name: selectedDriver.driverfirstname + " " + selectedDriver.driverlastname,
+        vehicle_number: selectedDriver.vehicle_number,
+        driver_contact: selectedDriver.driver_contact
+    };
+
+    fetch("/update-driver/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken()
+        },
+        body: JSON.stringify(payload)
     })
-  .catch(err => {
-    console.error("Error updating trip:", err);
-  });
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("✅ Trip updated with selected driver!");
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById("tripSummaryModal"));
+                if (modal) modal.hide();
+
+                // Show receipt and redirect
+                showAndPrintTripReceipt(window.nodeId);
+            } else {
+                alert("❌ Failed to save trip: " + data.error);
+            }
+        })
+        .catch(err => {
+            console.error("Error updating trip:", err);
+        });
 }
 
 function clearDriverSelection() {
-  const input = document.getElementById("driverSearchInput");
-  if (input) input.value = "";
+    const input = document.getElementById("driverSearchInput");
+    if (input) input.value = "";
 
-  selectedDriver = null;
+    selectedDriver = null;
 
-  // Hide the Save Trip button
-  document.getElementById("saveTripBtn").style.display = "none";
+    // Hide the Save Trip button
+    document.getElementById("saveTripBtn").style.display = "none";
 
-  // Reload all drivers
-  fetchDrivers(selectedVehicleType || "");
+    // Reload all drivers
+    fetchDrivers(selectedVehicleType || "");
 }
 
 function buildTripReceiptContent() {
-  const receiptDiv = document.getElementById("tripReceiptBody");
+    const receiptDiv = document.getElementById("tripReceiptBody");
 
-  // Build formatted HTML
-  receiptDiv.innerHTML = `
+    // Build formatted HTML
+    receiptDiv.innerHTML = `
     <div class="row">
       <div class="col-md-6">
         <h6 class="fw-bold text-primary">Trip Details</h6>
@@ -1423,11 +1522,11 @@ function buildTripReceiptContent() {
 }
 
 function printTripReceipt() {
-  const receiptContent = document.getElementById("tripReceiptContent").innerHTML;
+    const receiptContent = document.getElementById("tripReceiptContent").innerHTML;
 
-  const printWindow = window.open('', '', 'height=700,width=900');
+    const printWindow = window.open('', '', 'height=700,width=900');
 
-  printWindow.document.write(`
+    printWindow.document.write(`
     <html>
       <head>
         <title>Trip Receipt</title>
@@ -1453,30 +1552,30 @@ function printTripReceipt() {
     </html>
   `);
 
-  printWindow.document.close();
+    printWindow.document.close();
 }
 function reloadDashboard() {
-  window.location.href = "/admin-dashboard/"; // Update this URL as needed
+    window.location.href = "/admin-dashboard/"; // Update this URL as needed
 }
 
 function showAndPrintTripReceipt(nodeId) {
-  // Build the receipt structure using existing modal data
-  const tripId = document.getElementById("summaryTripId").textContent;
-  const pickup = document.getElementById("summaryPickup").textContent;
-  const drop = document.getElementById("summaryDrop").textContent;
-  const vehicle = document.getElementById("summaryVehicle").textContent;
-  const km = document.getElementById("summaryKM").textContent;
-  const name = document.getElementById("summaryCustomerName").textContent;
-  const email = document.getElementById("summaryCustomerEmail").textContent;
-  const contact = document.getElementById("summaryCustomerContact").textContent;
-  const total = document.getElementById("summaryAmount").textContent;
+    // Build the receipt structure using existing modal data
+    const tripId = document.getElementById("summaryTripId").textContent;
+    const pickup = document.getElementById("summaryPickup").textContent;
+    const drop = document.getElementById("summaryDrop").textContent;
+    const vehicle = document.getElementById("summaryVehicle").textContent;
+    const km = document.getElementById("summaryKM").textContent;
+    const name = document.getElementById("summaryCustomerName").textContent;
+    const email = document.getElementById("summaryCustomerEmail").textContent;
+    const contact = document.getElementById("summaryCustomerContact").textContent;
+    const total = document.getElementById("summaryAmount").textContent;
 
-  const driverName = selectedDriver?.driverfirstname + " " + selectedDriver?.driverlastname || "-";
-  const driverContact = selectedDriver?.driver_contact || "-";
-  const vehicleNumber = selectedDriver?.vehicle_number || "-";
+    const driverName = selectedDriver?.driverfirstname + " " + selectedDriver?.driverlastname || "-";
+    const driverContact = selectedDriver?.driver_contact || "-";
+    const vehicleNumber = selectedDriver?.vehicle_number || "-";
 
-  const receiptSection = document.getElementById("receiptSection");
-  receiptSection.innerHTML = `
+    const receiptSection = document.getElementById("receiptSection");
+    receiptSection.innerHTML = `
     <div class="card-title">Trip Receipt</div>
     <hr>
     <div class="row">
@@ -1513,9 +1612,9 @@ function showAndPrintTripReceipt(nodeId) {
     </div>
   `;
 
-  // Open styled print window
-  const printWindow = window.open('', '', 'height=800,width=600');
-  printWindow.document.write(`
+    // Open styled print window
+    const printWindow = window.open('', '', 'height=800,width=600');
+    printWindow.document.write(`
     <html>
     <head>
         <title>Print Receipt</title>
@@ -1595,107 +1694,107 @@ function showAndPrintTripReceipt(nodeId) {
     </body>
     </html>
   `);
-  printWindow.document.close();
-  printWindow.focus();
+    printWindow.document.close();
+    printWindow.focus();
 
-  setTimeout(() => {
-    printWindow.print();
-    printWindow.close();
-    window.location.href = `/node_dashboard/${nodeId}`;
-  }, 600);
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+        window.location.href = `/node_dashboard/${nodeId}`;
+    }, 600);
 }
 
 function payCashNow() {
-  const name = document.getElementById("rzp-name").value.trim();
-  const email = document.getElementById("rzp-email").value.trim();
-  const contact = document.getElementById("rzp-contact").value.trim();
+    const name = document.getElementById("rzp-name").value.trim();
+    const email = document.getElementById("rzp-email").value.trim();
+    const contact = document.getElementById("rzp-contact").value.trim();
 
-  if (!name || !email || !contact) {
-    alert("Please fill all details.");
-    return;
-  }
-
-  const totalElement = document.getElementById("totalAmountDisplay");
-  if (!totalElement) {
-    alert("Total amount not found.");
-    return;
-  }
-
-  const amountText = totalElement.textContent.replace(/[^\d.]/g, '');
-  const totalAmount = parseFloat(amountText);
-  if (isNaN(totalAmount) || totalAmount <= 0) {
-    alert("Invalid total amount.");
-    return;
-  }
-
-  const payload = {
-    date: new Date().toISOString().split('T')[0],
-    time: new Date().toTimeString().split(' ')[0],
-    booking_id: "NSKAT" + Date.now(),
-
-    passenger_name: name,
-    contact_number: contact,
-    email_id: email,
-
-    from_city: document.getElementById("fromAddress")?.textContent || "-",
-    to_city: document.getElementById("toAddress")?.textContent || "-",
-    vehicle_type: selectedVehicleType || "-",
-    driver_name: selectedDriver?.driverfirstname + " " + selectedDriver?.driverlastname || "Pending",
-    vehicle_number: selectedDriver?.vehicle_number || "Pending",
-    driver_contact: selectedDriver?.driver_contact || "Pending",
-
-    payment_type: "Cash",
-    base_fare: baseTariff || 0,
-    discount: discount || 0,
-    terminal_charges: terminal || 0,
-    surcharges: surcharge || 0,
-    taxes: taxPercent || "0%",
-    total_amount: totalAmount || 0,
-    extra_charges: {},
-    extra_total: extraCharges || 0,
-    status: "Cash Paid"
-  };
-
-  // Close Razorpay modal
-  const modal = bootstrap.Modal.getInstance(document.getElementById('razorpayUserModal'));
-  modal.hide();
-
-  fetch("/save-trip/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": getCSRFToken()
-    },
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      alert("💵 Trip saved successfully with Cash Payment! OTP: " + data.otp);
-
-      // Show summary modal with trip data
-      document.getElementById("summaryPickup").textContent = payload.from_city;
-      document.getElementById("summaryDrop").textContent = payload.to_city;
-      document.getElementById("summaryVehicle").textContent = payload.vehicle_type;
-      document.getElementById("summaryKM").textContent = `${payload.extra_total || 0} km`;
-      document.getElementById("summaryTripId").textContent = payload.booking_id;
-
-      document.getElementById("summaryCustomerName").textContent = payload.passenger_name;
-      document.getElementById("summaryCustomerEmail").textContent = payload.email_id;
-      document.getElementById("summaryCustomerContact").textContent = payload.contact_number;
-
-      document.getElementById("summaryAmount").textContent = payload.total_amount;
-
-      const summaryModal = new bootstrap.Modal(document.getElementById("tripSummaryModal"));
-      summaryModal.show();
-    } else {
-      alert("Failed to save trip: " + data.error);
+    if (!name || !email || !contact) {
+        alert("Please fill all details.");
+        return;
     }
-  })
-  .catch(err => {
-    console.error("Error during save:", err);
-    alert("Network or server error.");
-  });
+
+    const totalElement = document.getElementById("totalAmountDisplay");
+    if (!totalElement) {
+        alert("Total amount not found.");
+        return;
+    }
+
+    const amountText = totalElement.textContent.replace(/[^\d.]/g, '');
+    const totalAmount = parseFloat(amountText);
+    if (isNaN(totalAmount) || totalAmount <= 0) {
+        alert("Invalid total amount.");
+        return;
+    }
+
+    const payload = {
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toTimeString().split(' ')[0],
+        booking_id: "NSKAT" + Date.now(),
+
+        passenger_name: name,
+        contact_number: contact,
+        email_id: email,
+
+        from_city: document.getElementById("fromAddress")?.textContent || "-",
+        to_city: document.getElementById("toAddress")?.textContent || "-",
+        vehicle_type: selectedVehicleType || "-",
+        driver_name: selectedDriver?.driverfirstname + " " + selectedDriver?.driverlastname || "Pending",
+        vehicle_number: selectedDriver?.vehicle_number || "Pending",
+        driver_contact: selectedDriver?.driver_contact || "Pending",
+
+        payment_type: "Cash",
+        base_fare: baseTariff || 0,
+        discount: discount || 0,
+        terminal_charges: terminal || 0,
+        surcharges: surcharge || 0,
+        taxes: taxPercent || "0%",
+        total_amount: totalAmount || 0,
+        extra_charges: {},
+        extra_total: extraCharges || 0,
+        status: "Cash Paid"
+    };
+
+    // Close Razorpay modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('razorpayUserModal'));
+    modal.hide();
+
+    fetch("/save-trip/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken()
+        },
+        body: JSON.stringify(payload)
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("💵 Trip saved successfully with Cash Payment! OTP: " + data.otp);
+
+                // Show summary modal with trip data
+                document.getElementById("summaryPickup").textContent = payload.from_city;
+                document.getElementById("summaryDrop").textContent = payload.to_city;
+                document.getElementById("summaryVehicle").textContent = payload.vehicle_type;
+                document.getElementById("summaryKM").textContent = `${payload.extra_total || 0} km`;
+                document.getElementById("summaryTripId").textContent = payload.booking_id;
+
+                document.getElementById("summaryCustomerName").textContent = payload.passenger_name;
+                document.getElementById("summaryCustomerEmail").textContent = payload.email_id;
+                document.getElementById("summaryCustomerContact").textContent = payload.contact_number;
+
+                document.getElementById("summaryAmount").textContent = payload.total_amount;
+
+                const summaryModal = new bootstrap.Modal(document.getElementById("tripSummaryModal"));
+                summaryModal.show();
+            } else {
+                alert("Failed to save trip: " + data.error);
+            }
+        })
+        .catch(err => {
+            console.error("Error during save:", err);
+            alert("Network or server error.");
+        });
 }
 
 
@@ -1717,4 +1816,41 @@ function fetchOutstationKmRanges() {
         .catch(err => {
             console.error("Failed to fetch KM ranges:", err);
         });
+}
+
+function calculateOutstationDistance() {
+    const destination = document.getElementById("destination")?.value;
+    if (!destination || !window.nodeLatitude || !window.nodeLongitude) {
+        alert("Missing destination or pickup coordinates.");
+        return;
+    }
+
+    const fromLatLng = new google.maps.LatLng(parseFloat(window.nodeLatitude), parseFloat(window.nodeLongitude));
+    const geocoder = new google.maps.Geocoder();
+
+    geocoder.geocode({ address: destination }, (results, status) => {
+        if (status === "OK" && results[0]) {
+            const toLatLng = results[0].geometry.location;
+
+            const service = new google.maps.DistanceMatrixService();
+            service.getDistanceMatrix({
+                origins: [fromLatLng],
+                destinations: [toLatLng],
+                travelMode: google.maps.TravelMode.DRIVING,
+                unitSystem: google.maps.UnitSystem.METRIC
+            }, (response, status) => {
+                if (status === "OK") {
+                    const distanceText = response.rows[0].elements[0].distance.text;
+                    const distanceKm = parseFloat(distanceText.split(" ")[0]);
+
+                    // ✅ Call the original handler with proper value
+                    handleOutstationDistanceSuccess(distanceKm);
+                } else {
+                    alert("Unable to calculate distance.");
+                }
+            });
+        } else {
+            alert("Failed to geocode destination.");
+        }
+    });
 }

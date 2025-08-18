@@ -25819,11 +25819,6 @@ table.dataTable tbody td.select-checkbox:after {
     border-color: #282f3a;
 }
 
-.km-range-button.selected {
-    background-color: #282f3a; /* Bootstrap dark */
-    color: white;
-    border-color: #282f3a;
-}
 
 .action-button {
     height: 110px;
@@ -25861,4 +25856,20 @@ table.dataTable tbody td.select-checkbox:after {
   width: 3em;
   height: 1.5em;
   cursor: pointer;
+}
+
+
+.toggle-wrapper {
+  background-color: #FFFFFF;         /* Light background */
+  border-radius: 15px;              /* Fully curved (pill) */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Optional subtle shadow */
+}
+
+#vehicleTypeSelection button:hover,
+#vehicleTypeSelection button.active,
+.km-range-button:hover,
+.km-range-button.active {
+    color: white !important;
+    background-color: #212529 !important; /* Bootstrap dark */
+    border-color: #212529 !important;
 }

@@ -541,10 +541,50 @@
         .qr-content .close-button:hover {
             color: #333;
         }
+        #loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* Spinner animation */
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid #ddd;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Spin effect */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+  }
+}
     </style>
 </head>
 
 <body>
+    <div id="loader">
+  <div class="spinner"></div>
+</div>
     <div id="map"></div>
     <div class="main-content">
         <div class="ride-card">
@@ -663,7 +703,7 @@
         <div class="qr-content">
             <button class="close-button" onclick="hideQrCode()">×</button>
             <h3>Scan to Pay</h3>
-            <img src="{% static 'driver/static/images/vansat_qr_code.png' %}" alt="QR Code"> {# Adjust path here for
+            <img src="{% static 'images/vansat_qr_code.png' %}" alt="QR Code"> {# Adjust path here for
             your QR Code #}
             <p>Please scan the QR code to complete the payment.</p>
         </div>
@@ -705,7 +745,7 @@
 
         // Car icon
         const carImageIcon = {
-            url: "{% static 'driver/static/images/Untitled design (1).png' %}",
+            url: "{% static 'images/carlogo.png' %}",
             scaledSize: new google.maps.Size(40, 40),
             anchor: new google.maps.Point(20, 20)
         };
@@ -946,6 +986,13 @@
             showMessage('Google Maps failed to load. Please check your API key and internet connection.', true);
         }
     });
+</script>
+<script>
+/* Show loader until page fully loads */
+window.addEventListener("load", function(){
+  document.getElementById("loader").style.display = "none";
+  document.getElementById("content").style.display = "block";
+});
 </script>
 
     <script async defer
