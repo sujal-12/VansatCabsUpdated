@@ -579,6 +579,7 @@ class Trip(models.Model):
         except Exception as e:
             print(f"Failed to send email for trip {self.booking_id}: {e}")
 
+
     def send_whatsapp_invoice(self, pdf_relative_path):
         """
         Sends a WhatsApp message with trip details and a link to the invoice PDF.
@@ -586,8 +587,14 @@ class Trip(models.Model):
 
         base_url = "https://bewildered-lizbeth-gstempire-5a6eaf80.koyeb.app/"
 
-        # Use the provided pdf_relative_path instead of re-creating it
-        pdf_full_url = urljoin(base_url, settings.MEDIA_URL + pdf_relative_path)
+        # Ensure the path is correct (avoid duplicate "media/")
+        if pdf_relative_path.startswith("media/"):
+            pdf_relative_path = pdf_relative_path  # already correct
+        else:
+            pdf_relative_path = f"media/{pdf_relative_path}"
+
+        # Join with base URL
+        pdf_full_url = urljoin(base_url, pdf_relative_path)
 
         url = (
             f"https://bhashsms.com/api/sendmsgutil.php?"
