@@ -3382,8 +3382,16 @@ function printTripReceipt() {
     return;
   }
 
-  const printWindow = window.open("", "_blank", "width=800,height=900");
-  printWindow.document.write(`
+  // Create an iframe for printing
+  let printFrame = document.createElement("iframe");
+  printFrame.style.position = "absolute";
+  printFrame.style.top = "-10000px"; // hide from screen
+  printFrame.style.left = "-10000px";
+  document.body.appendChild(printFrame);
+
+  let doc = printFrame.contentWindow.document;
+  doc.open();
+  doc.write(`
     <html>
     <head>
         <title>Trip Receipt</title>
@@ -3424,10 +3432,13 @@ function printTripReceipt() {
     </body>
     </html>
   `);
-  printWindow.document.close();
-  printWindow.onload = function () {
-    printWindow.print();
-    printWindow.close();
+  doc.close();
+
+  // Wait for iframe content to load before printing
+  printFrame.onload = function () {
+    printFrame.contentWindow.focus();
+    printFrame.contentWindow.print();
+    setTimeout(() => document.body.removeChild(printFrame), 1000);
   };
 }
 
