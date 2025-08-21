@@ -16,6 +16,9 @@ from django.templatetags.static import static
 from decimal import Decimal
 from django.core.mail import send_mail
 import json # Import json to handle JSONField data
+import requests
+from urllib.parse import urljoin, quote_plus
+
 
 # Create your models here.
 class Node(models.Model):
@@ -242,6 +245,7 @@ def numbers_to_words(number):
 # Assuming you have a `numbers_to_words` function defined somewhere
 # and Node and FixedTariff models defined as well.
 
+
 class Trip(models.Model):
     date = models.DateField()
     time = models.TimeField()
@@ -311,9 +315,18 @@ class Trip(models.Model):
             if self.start_time and self.end_time:
                 self.total_time = self.end_time - self.start_time
                 self.save(update_fields=['total_time'])
-            self.calculate_commissions()
-            self.send_completion_email()
             
+            self.calculate_commissions()
+            
+            # First, generate and save the PDF file
+            pdf_path = self.generate_invoice_pdf()
+            
+            # Then, send the email with the attached PDF
+            self.send_completion_email(pdf_path)
+
+            # Finally, send the WhatsApp message with the PDF's URL
+            self.send_whatsapp_invoice(pdf_path)
+
     def calculate_commissions(self):
         """
         Calculates and updates Vansat's and the driver's commission based on the total amount.
@@ -338,7 +351,7 @@ class Trip(models.Model):
             self.save(update_fields=['vansat_commission', 'driver_commission'])
 
     def generate_invoice_pdf(self):
-        """Generate a PDF invoice for the trip with the specified format."""
+        """Generate and save a PDF invoice for the trip with the specified format."""
         buffer = io.BytesIO()
 
         doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5 * inch, bottomMargin=0.5 * inch,
@@ -374,7 +387,7 @@ class Trip(models.Model):
         header_table = Table([[
             Image(logo_path_eng, width=1.8 * inch, height=0.9 * inch),
             Paragraph("NASHIK AIRPORT TAXI", title_style),
-            Image(logo_path_hindi, width=1.8 * inch, height=0.9 * inch)                                             
+            Image(logo_path_hindi, width=1.8 * inch, height=0.9 * inch)                         
         ]], colWidths=[doc_width / 3, doc_width / 3, doc_width / 3])
         header_table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
@@ -508,9 +521,22 @@ class Trip(models.Model):
         
         doc.build(elements)
         buffer.seek(0)
-        return buffer
+        
+        # --- NEW: Save the PDF to the media folder ---
+        pdf_dir = os.path.join(settings.MEDIA_ROOT, 'invoices')
+        os.makedirs(pdf_dir, exist_ok=True)
+        
+        file_path = os.path.join(pdf_dir, f'invoice_{self.booking_id}.pdf')
+        
+        with open(file_path, 'wb') as f:
+            f.write(buffer.getvalue())
+            
+        print(f"Invoice PDF saved to {file_path}")
+        
+        # Return the relative path for easy URL creation
+        return os.path.join('invoices', f'invoice_{self.booking_id}.pdf')
 
-    def send_completion_email(self):
+    def send_completion_email(self, pdf_relative_path):
         """Send completion email with PDF invoice attached."""
         subject = f"Your Trip {self.booking_id} is Completed - Invoice"
         
@@ -532,15 +558,18 @@ class Trip(models.Model):
         from_email = settings.EMAIL_HOST_USER
         recipient_list = [self.email_id]
 
-        pdf_buffer = self.generate_invoice_pdf()
-        
+        # Read the saved PDF file to attach it to the email
+        file_path = os.path.join(settings.MEDIA_ROOT, pdf_relative_path)
+        with open(file_path, 'rb') as pdf_file:
+            pdf_data = pdf_file.read()
+
         email = EmailMessage(
             subject,
             plain_message,
             from_email,
             recipient_list
         )
-        email.attach(f'invoice_{self.booking_id}.pdf', pdf_buffer.getvalue(), 'application/pdf')
+        email.attach(f'invoice_{self.booking_id}.pdf', pdf_data, 'application/pdf')
         email.content_subtype = 'html'
         email.body = html_message
 
@@ -549,6 +578,36 @@ class Trip(models.Model):
             print(f"Email with invoice sent successfully for trip {self.booking_id} to {self.email_id}")
         except Exception as e:
             print(f"Failed to send email for trip {self.booking_id}: {e}")
+
+    def send_whatsapp_invoice(self, pdf_relative_path):
+        """
+        Sends a WhatsApp message with trip details and a link to the invoice PDF.
+        This version directly constructs the URL like in your OTP example.
+        """
+
+        # Define a base URL for your production domain
+        base_url = "https://bewildered-lizbeth-gstempire-5a6eaf80.koyeb.app/"
+
+        # Construct the full URL to the saved PDF
+        pdf_full_url = urljoin(base_url, settings.MEDIA_URL + pdf_relative_path)
+
+        # Build the URL directly with parameters
+        url = (
+            f"https://bhashsms.com/api/sendmsgutil.php?user=VANSAT_WA&pass=123456&sender=BUZWAP&text=inv25&priority=wa&stype=normal&phone={self.contact_number}&Params={self.passenger_name},{self.booking_id},{self.vehicle_type},{self.from_city},{self.to_city},{self.date.strftime('%d-%m-%Y')},₹{self.total_amount:.2f},{self.payment_type},{self.booking_id}&htype=document&url={pdf_full_url}"
+        )
+        print(pdf_full_url)
+
+        try:
+            response = requests.get(url, timeout=10)
+            print(f"WhatsApp API response: {response.status_code}, {response.text}")
+
+            if response.status_code == 200:
+                print(f"WhatsApp message with invoice sent successfully for trip {self.booking_id} to {self.contact_number}")
+            else:
+                print(f"Failed to send WhatsApp message for trip {self.booking_id}. API responded with {response.status_code}.")
+        except Exception as e:
+            print(f"Error sending WhatsApp message for trip {self.booking_id}: {e}")
+
 
 class TripLocation(models.Model):
     trip = models.OneToOneField(Trip, on_delete=models.CASCADE, related_name="locations")
