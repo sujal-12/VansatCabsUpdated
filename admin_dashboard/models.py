@@ -579,34 +579,38 @@ class Trip(models.Model):
         except Exception as e:
             print(f"Failed to send email for trip {self.booking_id}: {e}")
 
-    def send_whatsapp_invoice(self, pdf_relative_path):
+    def send_whatsapp_invoice(self):
         """
         Sends a WhatsApp message with trip details and a link to the invoice PDF.
-        This version directly constructs the URL like in your OTP example.
         """
 
-        # Define a base URL for your production domain
-        base_url = "https://bewildered-lizbeth-gstempire-5a6eaf80.koyeb.app/media/invoices/invoice_<trip_id>.pdf"
+        base_url = "https://bewildered-lizbeth-gstempire-5a6eaf80.koyeb.app/"
 
-        # Construct the full URL to the saved PDF
+        # Assuming you save PDFs as invoices/invoice_<booking_id>.pdf
+        pdf_relative_path = f"invoices/invoice_{self.booking_id}.pdf"
         pdf_full_url = urljoin(base_url, settings.MEDIA_URL + pdf_relative_path)
 
-        # Build the URL directly with parameters
         url = (
-            f"https://bhashsms.com/api/sendmsgutil.php?user=VANSAT_WA&pass=123456&sender=BUZWAP&text=inv25&priority=wa&stype=normal&phone={self.contact_number}&Params={self.passenger_name},{self.booking_id},{self.vehicle_type},{self.from_city},{self.to_city},{self.date.strftime('%d-%m-%Y')},₹{self.total_amount:.2f},{self.payment_type},{self.booking_id}&htype=document&url={pdf_full_url}"
+            f"https://bhashsms.com/api/sendmsgutil.php?"
+            f"user=VANSAT_WA&pass=123456&sender=BUZWAP&text=inv25&priority=wa&stype=normal"
+            f"&phone={self.contact_number}"
+            f"&Params={self.passenger_name},{self.booking_id},{self.vehicle_type},{self.from_city},{self.to_city},{self.date.strftime('%d-%m-%Y')},₹{self.total_amount:.2f},{self.payment_type},{self.booking_id}"
+            f"&htype=document&url={pdf_full_url}"
         )
-        print(pdf_full_url)
+
+        print("Invoice URL:", pdf_full_url)
 
         try:
             response = requests.get(url, timeout=10)
             print(f"WhatsApp API response: {response.status_code}, {response.text}")
 
             if response.status_code == 200:
-                print(f"WhatsApp message with invoice sent successfully for trip {self.booking_id} to {self.contact_number}")
+                print(f"✅ WhatsApp invoice sent successfully for {self.booking_id}")
             else:
-                print(f"Failed to send WhatsApp message for trip {self.booking_id}. API responded with {response.status_code}.")
+                print(f"❌ Failed to send WhatsApp invoice for {self.booking_id}, API {response.status_code}")
         except Exception as e:
-            print(f"Error sending WhatsApp message for trip {self.booking_id}: {e}")
+            print(f"⚠️ Error sending WhatsApp invoice for {self.booking_id}: {e}")
+
 
 
 class TripLocation(models.Model):
