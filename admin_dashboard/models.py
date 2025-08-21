@@ -586,7 +586,7 @@ class Trip(models.Model):
         """
 
         # Define a base URL for your production domain
-        base_url = "https://bewildered-lizbeth-gstempire-5a6eaf80.koyeb.app/"
+        base_url = "https://bewildered-lizbeth-gstempire-5a6eaf80.koyeb.app/media/invoices/invoice_<trip_id>.pdf"
 
         # Construct the full URL to the saved PDF
         pdf_full_url = urljoin(base_url, settings.MEDIA_URL + pdf_relative_path)
