@@ -158,11 +158,13 @@ def admin_dashboard(request):
 def trips_by_status_view(request):
     status = request.GET.get("status")
     selected_date_str = request.GET.get("date")
+    nodes = Node.objects.all()
     
     try:
         selected_date = datetime.strptime(selected_date_str, "%Y-%m-%d").date()
     except:
-        selected_date = now().date()
+        selected_date = str(now().date())
+        selected_date = datetime.strptime(selected_date, "%Y-%m-%d").date()
     
     if status == 'All':
         trips = Trip.objects.filter(date=selected_date)
@@ -173,6 +175,7 @@ def trips_by_status_view(request):
         "trips": trips,
         "status": status,
         "selected_date": selected_date.strftime('%Y-%m-%d'),
+        'nodes': nodes,
     }
     return render(request, "trips_by_status.html", context)
 
@@ -1566,15 +1569,17 @@ def save_trip_after_payment(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            otp = generate_otp()
 
+            # Create Trip
             trip = Trip.objects.create(
-                date=datetime.strptime(data.get("date"), "%d-%m-%Y").date(),
-                time=datetime.strptime(data.get("time"), "%I:%M %p").time(),
+                date=datetime.strptime(data.get("date", ""), "%d-%m-%Y").date() if data.get("date") else None,
+                time=datetime.strptime(data.get("time", ""), "%I:%M %p").time() if data.get("time") else None,
                 booking_id=data.get("tripId", ""),
                 passenger_name=data.get("passenger_name", ""),
                 contact_number=data.get("contact_number", ""),
                 email_id=data.get("email_id", ""),
-                otp=generate_otp(),
+                otp=otp,
                 otp_verified=False,
                 from_city=data.get("from_city", ""),
                 to_city=data.get("to_city", ""),
@@ -1587,25 +1592,31 @@ def save_trip_after_payment(request):
                 discount=data.get("discount", 0),
                 terminal_charges=data.get("terminal_charges", 0),
                 surcharges=data.get("surcharges", 0),
-                taxes=data.get("taxes", ""),
+                taxes=data.get("taxes", 0),
                 total_amount=data.get("total_amount", 0),
                 payment_status=data.get("payment_status", ""),
                 gst_number=data.get("gst_number", ""),
                 company_name=data.get("company_name", ""),
-                company_address = data.get("company_address", ""),
-                vansat_commission=data.get("vansat_commission"),
-                driver_commission=data.get("driver_commission"),
-                extra_charges=data.get("extra_charges"),
-                extra_total=data.get("extra_total"),
+                company_address=data.get("company_address", ""),
+                vansat_commission=data.get("vansat_commission", 0),
+                driver_commission=data.get("driver_commission", 0),
+                extra_charges=data.get("extra_charges", 0),
+                extra_total=data.get("extra_total", 0),
                 status="Pending"
             )
 
-            return JsonResponse({"success": True, "booking_id": trip.booking_id, "otp" : trip.otp})
-        
+            return JsonResponse({
+                "success": True,
+                "booking_id": trip.booking_id,
+                "otp": trip.otp
+            })
+
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)}, status=400)
 
     return JsonResponse({"error": "Invalid request"}, status=405)
+
+
 
 # from django.shortcuts import render, get_object_or_404, redirect
 # from django.views.decorators.csrf import csrf_exempt
@@ -1795,14 +1806,21 @@ def update_trip_driver(request):
             booking_id = data.get('booking_id')
             trip = Trip.objects.get(booking_id=booking_id)
 
+            # Update driver details
             trip.driver_name = data.get('driver_name', '-')
             trip.vehicle_number = data.get('vehicle_number', '-')
             trip.driver_contact = data.get('driver_contact', '-')
             trip.save()
 
-            return JsonResponse({'success': True})
+            return JsonResponse({
+                'success': True,
+                'booking_id': trip.booking_id
+            })
+
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+    return JsonResponse({"error": "Invalid request"}, status=405)
         
 def airport_suggestions(request):
     node_id = request.GET.get("node_id")
@@ -1908,19 +1926,51 @@ def update_trip_driver(request):
 
             trip = Trip.objects.get(booking_id=trip_id)
 
-            # Optionally get the driver object if you need validation
+            # Optionally validate driver
             driver = DriverRegistration.objects.filter(
                 driverfirstname__iexact=driver_name.split()[0],
                 driverlastname__iexact=driver_name.split()[-1],
                 drivermobileno=driver_contact
             ).first()
 
+            # Update trip with driver details
             trip.driver_name = driver_name
             trip.driver_contact = driver_contact
             trip.vehicle_number = vehicle_no
             trip.save()
 
-            return JsonResponse({"status": "success", "message": "Driver assigned successfully"})
+            print(trip.contact_number, trip.booking_id, trip.from_city, trip.to_city, trip.driver_name, trip.driver_contact, trip.vehicle_number)
+            
+            # ✅ Sanitize cities (remove commas)
+            from_city = trip.from_city.replace(",", " ") if trip.from_city else ""
+            to_city = trip.to_city.replace(",", " ") if trip.to_city else ""
+
+            # 🔹 Construct OTP & Trip Details URLs (kept inline, no () or new lines)
+            otp_url = f"http://bhashsms.com/api/sendmsgutil.php?user=VANSAT_WA&pass=123456&sender=BUZWAP&phone={trip.contact_number}&text=vansataut&priority=wa&stype=auth&Params={trip.otp}"
+            trip_details_url = f"http://bhashsms.com/api/sendmsgutil.php?user=VANSAT_WA&pass=123456&sender=BUZWAP&phone={trip.contact_number}&text=trip_details&priority=wa&stype=normal&Params={trip.booking_id},{'-'},{from_city},{to_city},{trip.driver_name},{trip.driver_contact},{trip.vehicle_number}"
+
+            otp_response_text, trip_details_response_text, error_msg = None, None, None
+
+            try:
+                otp_response = requests.get(otp_url, timeout=10)
+                otp_response_text = otp_response.text
+
+                details_response = requests.get(trip_details_url, timeout=10)
+                trip_details_response_text = details_response.text
+            except Exception as e:
+                error_msg = str(e)
+                print(error_msg)
+
+            return JsonResponse({
+                "status": "success" if not error_msg else "error",
+                "message": "Driver assigned successfully" if not error_msg else "Driver assigned but SMS sending failed",
+                "booking_id": trip.booking_id,
+                "otp": trip.otp,
+                "otp_response": otp_response_text,
+                "trip_details_response": trip_details_response_text,
+                "error": error_msg
+            })
+
         except Trip.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Trip not found"}, status=404)
         except Exception as e:
@@ -1963,3 +2013,32 @@ def get_trip_details(request, tripId):
     }
 
     return JsonResponse(trip_data)
+
+def airport_tariff_suggestions(request):
+    node_id = request.GET.get("node_id")
+    qs = AirportTariff.objects.all()
+
+    if node_id:
+        qs = qs.filter(node=node_id)
+
+    # Exclude ranges like "0-10", "11-20"
+    regex = re.compile(r'^\d+\s*-\s*\d+$')
+    filtered = [t for t in qs if not regex.match(t.kmRange)]
+
+    # Collect unique kmRange values
+    suggestions = list(set(t.kmRange for t in filtered if t.kmRange))
+
+    # Add "<City> Airport" suggestion for the current node
+    if node_id:
+        from .models import Node  # adjust import if Node is in another app
+        try:
+            node = Node.objects.get(nodeID=node_id)
+            city_airport = f"{node.nodeCity} Airport"  # assuming Node has `city` field
+            suggestions.append(city_airport)
+        except Node.DoesNotExist:
+            pass
+
+    # Deduplicate again
+    suggestions = list(set(suggestions))
+
+    return JsonResponse({"suggestions": suggestions})

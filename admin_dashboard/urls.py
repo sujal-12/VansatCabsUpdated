@@ -66,5 +66,6 @@ urlpatterns = [
     path("update-trip-driver/", views.update_trip_driver, name="update_trip_driver"),
     path('get_trip_details/<str:tripId>/', views.get_trip_details, name='get_trip_details'),
     path("api/generate-future-trip-id/", views.generate_future_trip_id_api, name="generate_future_trip_id"),
+    path("api/airport-suggestions/", views.airport_tariff_suggestions, name="airport_suggestions"),
 
 ] 

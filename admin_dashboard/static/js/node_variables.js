@@ -105,7 +105,8 @@ function confirmTripReset() {
     selectedTripMode = "live";
     setActiveTripButton("live");
     showTripTypes("live");
-  } else if (pendingTripMode === "future") {
+  } 
+  else if (pendingTripMode === "future") {
     selectedTripMode = "future";
     setActiveTripButton("future");
     showTripTypes("future");
@@ -131,11 +132,46 @@ function setActiveTripButton(type) {
   if (type === "live") {
     liveTripBtn.classList.add("active-trip-button");
     futureTripBtn.classList.remove("active-trip-button");
-  } else {
+  } 
+  else {
     futureTripBtn.classList.add("active-trip-button");
     liveTripBtn.classList.remove("active-trip-button");
   }
 }
+
+// function showTripTypes(type) {
+//   const tripTypeSection = document.getElementById("tripTypeSection");
+//   tripTypeSection.style.display = "flex";
+//   tripTypeSection.innerHTML = "";
+
+//   const title = document.createElement("h5");
+//   title.className = "w-100 text-dark mb-2 fw-bold";
+//   title.innerText = "Select Trip Type";
+//   tripTypeSection.appendChild(title);
+
+//   const tripOptions = type === "live"
+//     ? [
+//       { label: "Airport Transfer", icon: "mdi mdi-airplane-takeoff" },
+//       { label: "Outstation", icon: "mdi mdi-map-marker-distance" },
+//       { label: "Holiday Tour", icon: "mdi mdi-beach" },
+//       { label: "Hourly Rental", icon: "mdi mdi-clock-outline" },
+//     ]
+//     : [
+//       { label: "Airport Transfer", icon: "mdi mdi-airplane-takeoff" },
+//       { label: "Outstation", icon: "mdi mdi-map-marker-distance" },
+//       { label: "Holiday Tour", icon: "mdi mdi-beach" },
+//       { label: "Hourly Rental", icon: "mdi mdi-clock-outline" },
+//       { label: "Railway Transfer", icon: "mdi mdi-train" },
+//     ];
+
+//   tripOptions.forEach(option => {
+//     const btn = document.createElement("button");
+//     btn.className = "btn btn-outline-dark square-button text-center m-1";
+//     btn.innerHTML = `<i class="${option.icon}"></i><span class="fw-bold">${option.label}</span>`;
+//     btn.onclick = () => handleTripTypeSelection(option.label, btn);
+//     tripTypeSection.appendChild(btn);
+//   });
+// }
 
 function showTripTypes(type) {
   const tripTypeSection = document.getElementById("tripTypeSection");
@@ -147,20 +183,22 @@ function showTripTypes(type) {
   title.innerText = "Select Trip Type";
   tripTypeSection.appendChild(title);
 
-  const tripOptions = type === "live"
-    ? [
-      { label: "Airport Transfer", icon: "mdi mdi-airplane-takeoff" },
-      { label: "Outstation", icon: "mdi mdi-map-marker-distance" },
-      { label: "Holiday Tour", icon: "mdi mdi-beach" },
-      { label: "Hourly Rental", icon: "mdi mdi-clock-outline" },
-    ]
-    : [
-      { label: "Airport Transfer", icon: "mdi mdi-airplane-takeoff" },
-      { label: "Outstation", icon: "mdi mdi-map-marker-distance" },
-      { label: "Holiday Tour", icon: "mdi mdi-beach" },
-      { label: "Hourly Rental", icon: "mdi mdi-clock-outline" },
-      { label: "Railway Transfer", icon: "mdi mdi-train" },
-    ];
+  // 🔹 If Future Trip clicked → only show "Coming Soon"
+  if (type === "future") {
+    const comingSoon = document.createElement("p");
+    comingSoon.className = "text-danger fw-bold fs-5 mt-2";
+    comingSoon.innerText = "Feature Coming Soon...";
+    tripTypeSection.appendChild(comingSoon);
+    return; // stop here, don't render buttons
+  }
+
+  // 🔹 Otherwise show Live Trip buttons
+  const tripOptions = [
+    { label: "Airport Transfer", icon: "mdi mdi-airplane-takeoff" },
+    { label: "Outstation", icon: "mdi mdi-map-marker-distance" },
+    { label: "Holiday Tour", icon: "mdi mdi-beach" },
+    { label: "Hourly Rental", icon: "mdi mdi-clock-outline" },
+  ];
 
   tripOptions.forEach(option => {
     const btn = document.createElement("button");
@@ -318,7 +356,7 @@ const rowFutureAirportDestinationSelection = `
         <i class="mdi mdi-close-circle-outline text-danger" style="font-size: 24px; cursor: pointer;" onclick="clearInput('futureAirportFrom')" title="Clear From"></i>
       </span>
     </div>
-    <div id="fromAirportSuggestionsBox" class="w-100"></div>
+    <div id="fromAirportSuggestionsBox" class="w-100 mt-2"></div>
   </div>
 
   <div class="row col-md-12 form-group mb-3 position-relative">
@@ -329,7 +367,7 @@ const rowFutureAirportDestinationSelection = `
         <i class="mdi mdi-close-circle-outline text-danger" style="font-size: 24px; cursor: pointer;" onclick="clearInput('futureAirportTo')" title="Clear To"></i>
       </span>
     </div>
-    <div id="toAirportSuggestionsBox" class="w-100"></div>
+    <div id="toAirportSuggestionsBox" class="w-100 mt-2"></div>
   </div>
 
   <div class="row col-md-12">
@@ -626,7 +664,7 @@ function handleTripTypeSelection(tripType, button) {
       }
 
       if (tripType === "Airport Transfer" && selectedTripMode === "live") {
-        attachLocationSuggestions({
+        attachLocationSuggestionsCity({
           inputId: "destination",
           suggestionsBoxId: "destinationSuggestionsBox",
           cityName: selectedCity,
@@ -694,7 +732,7 @@ function handleTripTypeSelection(tripType, button) {
           .catch(err => console.error("Hourly Rental API error:", err));
       }
 
-      if (selectedTripType === "Future" && selectedCategory === "Airport Transfer") {
+      if (selectedTripType === "future" && selectedCategory === "Airport Transfer") {
         document.getElementById("stepOneContainer").innerHTML = rowFutureAirportDestinationSelection;
 
         // Now attach focus listeners for airport suggestions
@@ -733,6 +771,7 @@ function handleTripTypeSelection(tripType, button) {
 
   }
 }
+
 
 function formatDateDDMMYYYY(date) {
   const dd = String(date.getDate()).padStart(2, '0');
@@ -812,7 +851,7 @@ function attachValidationEvents() {
   validateRequiredFieldsAndToggleButton();
 }
 
-function attachLocationSuggestions({ inputId, suggestionsBoxId, cityName, onSelect, maxResults = 4 }) {
+function attachLocationSuggestionsCity({ inputId, suggestionsBoxId, cityName, onSelect, maxResults = 4 }) {
   const input = document.getElementById(inputId);
   const suggestionsBox = document.getElementById(suggestionsBoxId);
 
@@ -928,6 +967,7 @@ function attachLocationSuggestions({
 
   input.addEventListener("input", () => {
     const query = input.value.trim();
+    console.log("Typing:", query, "on inputId:", inputId);
     suggestionsBox.innerHTML = "";
     if (!query || query.length < 2) return;
 
@@ -979,20 +1019,58 @@ function attachLocationSuggestions({
 }
 
 
-function attachTextSuggestions({ inputId, suggestionsBoxId, suggestions, onSelect }) {
-  const input = document.getElementById(inputId);
-  const box = document.getElementById(suggestionsBoxId);
+// --- small util
+function debounce(fn, ms = 400) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(null, args), ms);
+  };
+}
 
-  if (!input || !box || !suggestions?.length) return;
+// --- call DistanceMatrix only when both fields have values
+function safeRecalcDistance() {
+  try {
+    const fromEl = document.getElementById("futureAirportFrom");
+    const toEl   = document.getElementById("futureAirportTo");
+    if (!fromEl || !toEl) return;
+
+    const from = (fromEl.value || "").trim();
+    const to   = (toEl.value || "").trim();
+    if (!from || !to) return;
+
+    if (typeof calculateDistance === "function") {
+      calculateDistance("futureAirportFrom", "futureAirportTo");
+    } else {
+      console.warn("[attachTextSuggestions] calculateDistance() not found");
+    }
+  } catch (e) {
+    console.error("[attachTextSuggestions] safeRecalcDistance error:", e);
+  }
+}
+
+// --- UPDATED function
+function attachTextSuggestions({ inputId, suggestionsBoxId, suggestions = [], onSelect }) {
+  const input = document.getElementById(inputId);
+  const box   = document.getElementById(suggestionsBoxId);
+
+  // We must always wire events even if suggestions are empty
+  if (!input || !box) return;
+
+  const debouncedRecalc = debounce(safeRecalcDistance, 500);
 
   function renderSuggestions(query = "") {
     box.innerHTML = "";
 
+    if (!Array.isArray(suggestions) || suggestions.length === 0) {
+      return; // nothing to render, but listeners remain wired
+    }
+
     const filtered = query
-      ? suggestions.filter(item => item.toLowerCase().includes(query.toLowerCase()))
+      ? suggestions.filter(item => (item || "").toLowerCase().includes(query.toLowerCase()))
       : suggestions;
 
-    const top = filtered.slice(0, 10); // Or show all: `filtered`
+    const top = filtered.slice(0, 10);
 
     top.forEach(item => {
       const div = document.createElement("div");
@@ -1002,11 +1080,18 @@ function attachTextSuggestions({ inputId, suggestionsBoxId, suggestions, onSelec
       wrapper.className = "position-relative";
 
       const btn = document.createElement("button");
+      btn.type = "button"; // prevent form submit
       btn.className = "btn btn-outline-dark w-100 text-start pe-5";
       btn.innerText = item;
+
       btn.onclick = () => {
-        onSelect(item);
+        input.value = item;
         box.innerHTML = "";
+
+        // Always recalc on selection
+        safeRecalcDistance();
+
+        if (typeof onSelect === "function") onSelect(item);
       };
 
       const icon = document.createElement("i");
@@ -1020,19 +1105,33 @@ function attachTextSuggestions({ inputId, suggestionsBoxId, suggestions, onSelec
     });
   }
 
-  // Show all suggestions on focus
+  // Show all suggestions on focus (if any)
   input.addEventListener("focus", () => renderSuggestions());
 
-  // Still allow filtering if the user types
+  // Filter list as user types, and debounce distance recalculation
   input.addEventListener("input", () => {
     renderSuggestions(input.value);
+    debouncedRecalc();
   });
 
-  // Optional: hide on blur
+  // Hide after blur (allow click), also recalc distance
   input.addEventListener("blur", () => {
-    setTimeout(() => box.innerHTML = "", 200); // delay to allow click
+    setTimeout(() => {
+      box.innerHTML = "";
+      safeRecalcDistance();
+    }, 200);
   });
 }
+
+// (Optional) ensure distance recalculates even if user types without using suggestions:
+["futureAirportFrom", "futureAirportTo"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener("change", safeRecalcDistance);
+    el.addEventListener("blur",   safeRecalcDistance);
+    el.addEventListener("input",  debounce(safeRecalcDistance, 500));
+  }
+});
 
 
 function getRowDateTimeType(tripType, tripId) {
@@ -1185,6 +1284,7 @@ function handleFutureTripNextStep(tripType) {
     destination = document.getElementById("futureAirportTo")?.value.trim() || "--";
     date = document.getElementById("futureAirportDate")?.value || "--";
     time = formatTimeTo12Hour(document.getElementById("futureAirportTime")?.value || "");
+    calculateDistance("futureAirportFrom", "futureAirportTo");
   }
   else if (tripType === "Outstation") {
     fromAddress = document.getElementById("futureOutstationFrom")?.value.trim() || "--";
@@ -1210,7 +1310,7 @@ function handleFutureTripNextStep(tripType) {
     date = document.getElementById("futureRailwayDate")?.value || "--";
     time = formatTimeTo12Hour(document.getElementById("futureRailwayTime")?.value || "");
   }
-
+  
   // ✅ Just call the separate trip ID fetch function
   fetchFutureTripId(currentNodeId, tripType, date, fromAddress, destination, time);
 }
@@ -1238,6 +1338,56 @@ function initCityRestrictedAutocomplete(inputId, nodeCity) {
       }
     }
   });
+}
+
+async function fetchAirportSuggestions(nodeId = null) {
+  const url = nodeId ? `/api/airport-suggestions/?node_id=${nodeId}` : `/api/airport-suggestions/`;
+  const resp = await fetch(url);
+  const data = await resp.json();
+  return data.suggestions || [];
+}
+
+async function initAirportInputSuggestions(which) {
+  const nodeId = window.nodeId || null;
+  const suggestions = await fetchAirportSuggestions(nodeId);
+
+  if (which === "from") {
+    // From Airport → attach to TO input
+    attachTextSuggestions({
+      inputId: "futureAirportTo",
+      suggestionsBoxId: "fromAirportSuggestionsBox",
+      suggestions: suggestions,
+      onSelect: (description) => {
+        document.getElementById("futureAirportTo").value = description;
+        document.getElementById("fromAirportSuggestionsBox").innerHTML = "";
+
+        // If airport chosen → calculate distance
+        if (description.includes("Airport")) {
+          calculateDistance("futureAirportFrom", "futureAirportTo");
+        }
+
+        validateRequiredFieldsAndToggleButton();
+      }
+    });
+  } else {
+    // To Airport → attach to FROM input
+    attachTextSuggestions({
+      inputId: "futureAirportFrom",
+      suggestionsBoxId: "fromAirportSuggestionsBox",
+      suggestions: suggestions,
+      onSelect: (description) => {
+        document.getElementById("futureAirportFrom").value = description;
+        document.getElementById("fromAirportSuggestionsBox").innerHTML = "";
+
+        // If airport chosen → calculate distance
+        if (description.includes("Airport")) {
+          calculateDistance("futureAirportFrom", "futureAirportTo");
+        }
+
+        validateRequiredFieldsAndToggleButton();
+      }
+    });
+  }
 }
 
 
@@ -1936,44 +2086,82 @@ function setupExclusiveToggle(btn1Id, btn2Id, activeClasses = ["text-white", "bg
   }
 }
 
-function toggleFutureAirportFields(type) {
-
+function toggleFutureAirportFields(which) {
+  const details = document.getElementById("futureAirportDetails");
   const fromBtn = document.getElementById("btnFromAirport");
   const toBtn = document.getElementById("btnToAirport");
-  const details = document.getElementById("futureAirportDetails");
-  const fromInput = document.getElementById("futureAirportFrom");
-  const toInput = document.getElementById("futureAirportTo");
+  let fromInput = document.getElementById("futureAirportFrom");
+  let toInput = document.getElementById("futureAirportTo");
 
-  if (!fromInput || !toInput) return;
+  if (!fromBtn || !toBtn || !fromInput || !toInput) return;
 
-  // 🔄 Swap the values of From and To fields
-  const tempValue = fromInput.value;
-  fromInput.value = toInput.value;
-  toInput.value = tempValue;
-
-  // 🎨 Keep your styling and placeholder logic
-  if (type === 'from') {
-    fromBtn.classList.add("text-white", "bg-primary");
-    fromBtn.classList.remove("text-dark", "bg-white");
-    toBtn.classList.remove("text-white", "bg-primary");
-    toBtn.classList.add("text-dark", "bg-white");
-    fromInput.placeholder = "Select Airport";
-    toInput.placeholder = "Enter Drop Location";
-  } else {
-    toBtn.classList.add("text-white", "bg-primary");
-    toBtn.classList.remove("text-dark", "bg-white");
-    fromBtn.classList.remove("text-white", "bg-primary");
-    fromBtn.classList.add("text-dark", "bg-white");
-    toInput.placeholder = "Select Airport";
-    fromInput.placeholder = "Enter Pickup Location";
-  }
-
+  // Show details section
   details.style.display = "block";
 
-  // ✅ Revalidate after swap so the Continue button updates
-  validateRequiredFieldsAndToggleButton();
-}
+  // 🔄 Swap values
+  const temp = fromInput.value;
+  fromInput.value = toInput.value;
+  toInput.value = temp;
 
+  // 🔘 Button highlight states
+  fromBtn.classList.toggle("btn-dark", which === "from");
+  fromBtn.classList.toggle("bg-white", which !== "from");
+  toBtn.classList.toggle("btn-dark", which === "to");
+  toBtn.classList.toggle("bg-white", which !== "to");
+
+  // 📝 Update placeholders
+  if (which === "from") {
+    fromInput.placeholder = "Select Airport";
+    toInput.placeholder = "Enter Drop Location";
+    initAirportInputSuggestions("to");
+  } else {
+    toInput.placeholder = "Select Airport";
+    fromInput.placeholder = "Enter Pickup Location";
+    initAirportInputSuggestions("from");
+  }
+
+  // ❌ Remove old listeners by cloning inputs
+  fromInput.replaceWith(fromInput.cloneNode(true));
+  toInput.replaceWith(toInput.cloneNode(true));
+  fromInput = document.getElementById("futureAirportFrom");
+  toInput = document.getElementById("futureAirportTo");
+
+  // ✅ Attach suggestions only on the city-side input
+  const cityName = window.selectedCity || window.nodeCityName || "";
+
+  if (which === "from") {
+    // From Airport → city suggestions only for TO
+    attachLocationSuggestionsCity({
+      inputId: "futureAirportTo",
+      suggestionsBoxId: "toAirportSuggestionsBox",
+      cityName,
+      maxResults: 6,
+      onSelect(description) {
+        toInput.value = description;
+        document.getElementById("toAirportSuggestionsBox").innerHTML = "";
+        validateRequiredFieldsAndToggleButton();
+      }
+    });
+  } else {
+    // To Airport → city suggestions only for FROM
+    attachLocationSuggestionsCity({
+      inputId: "futureAirportFrom",
+      suggestionsBoxId: "fromAirportSuggestionsBox",
+      cityName,
+      maxResults: 6,
+      onSelect(description) {
+        fromInput.value = description;
+        document.getElementById("fromAirportSuggestionsBox").innerHTML = "";
+        validateRequiredFieldsAndToggleButton();
+      }
+    });
+  }
+
+  // ✅ Revalidate after toggle
+  if (typeof validateRequiredFieldsAndToggleButton === "function") {
+    validateRequiredFieldsAndToggleButton();
+  }
+}
 
 function toggleOutstationTripType(type) {
   const oneWayBtn = document.getElementById("btnOneWay");
@@ -2051,11 +2239,20 @@ function toggleFutureRailwayFields(type) {
 
 function clearInput(inputId) {
   const input = document.getElementById(inputId);
+  const toAirportSuggestionsBox = document.getElementById("toAirportSuggestionsBox");
+  const fromAirportSuggestionsBox = document.getElementById("fromAirportSuggestionsBox");
   if (input) {
     input.value = "";
   }
-  // Trigger validation after clearing
-  validateRequiredFieldsAndToggleButton();
+  // Clear suggestion boxes (keep the element nodes so attach functions still target them)
+  [toAirportSuggestionsBox, fromAirportSuggestionsBox].forEach(box => {
+    if (box) box.innerHTML = "";
+  });
+
+  // Re-run validation (in case some inputs are auto-filled)
+  if (typeof validateRequiredFieldsAndToggleButton === "function") {
+    validateRequiredFieldsAndToggleButton();
+  }
 }
 
 
@@ -3088,44 +3285,182 @@ function fetchTripDetails(tripId) {
     });
 }
 
+function fetchTripDetails(tripId) {
+  console.log("Fetching Trip ID:", tripId);
+  fetch(`/get_trip_details/${tripId}/`)
+    .then(response => {
+      if (!response.ok) throw new Error("Failed to fetch trip details");
+      return response.json();
+    })
+    .then(updatedTrip => {
+      // Build receipt HTML (same as before but without print logic)
+      lastFetchedTripHTML = `
+        <div style="text-align: center; margin-bottom: 3px;">
+          <img src="${logoUrl}" alt="Company Logo" style="height: 50px;">
+          <h4 style="margin: 2px 0; font-weight: bold;">Vansat Cabs Pvt. Ltd.</h4>
+          <p style="margin: 0;">${window.nodeAddress}</p>
+          <p style="margin: 0;">Ph: 7262-025-025 / 7263-025-025</p>
+          <p style="margin: 0;">www.vansatcabs.com</p>
+          <p style="margin: 0;">GSTIN : 27ARBPG2111L1Z6 </p>
+        </div>
+        <p style="font-family: monospace; text-align: center;">--------------------------------------------</p>
+        <h6 class="fw-bold">Trip ID : ${updatedTrip.booking_id}</h6>
+        <h6 class="fw-bold text-primary">Passenger Details</h6>
+        <div class="row small">
+          <div class="col-6"><p><strong>Name:</strong> ${updatedTrip.passenger_name}</p></div>
+          <div class="col-6"><p><strong>Contact:</strong> ${updatedTrip.contact_number}</p></div>
+          <div class="col-12"><p><strong>Email:</strong> ${updatedTrip.email_id}</p></div>
+          ${updatedTrip.company_name ? `<div class="col-12"><p><strong>Company Name:</strong> ${updatedTrip.company_name}</p></div>` : ""}
+          ${updatedTrip.company_address ? `<div class="col-12"><p><strong>Company Address:</strong> ${updatedTrip.company_address}</p></div>` : ""}
+          ${updatedTrip.gst_number ? `<div class="col-12"><p><strong>GST Number:</strong> ${updatedTrip.gst_number}</p></div>` : ""}
+        </div>
+        <p style="font-family: monospace; text-align: center;">--------------------------------------------</p>
+        <h6 class="fw-bold text-primary">Trip Details</h6>
+        <div class="row small">
+          <div class="col-6"><p><strong>Date:</strong> ${updatedTrip.date}</p></div>
+          <div class="col-6"><p><strong>Time:</strong> ${updatedTrip.time}</p></div>
+        </div>
+        <p style="font-family: monospace; text-align: center;">--------------------------------------------</p>
+        <h6 class="fw-bold text-primary">Route</h6>
+        <div class="row small">
+          <div class="col-6"><p><strong>From:</strong> ${updatedTrip.from_city}</p></div>
+          <div class="col-6"><p><strong>To:</strong> ${updatedTrip.to_city}</p></div>
+        </div>
+        <p style="font-family: monospace; text-align: center;">--------------------------------------------</p>
+        <h6 class="fw-bold text-primary">Vehicle & Driver</h6>
+        <div class="row small">
+          <div class="col-6">
+            <p><strong>Vehicle Type:</strong> ${updatedTrip.vehicle_type}</p>
+            <p><strong>Vehicle No.:</strong> ${updatedTrip.vehicle_number || "-"}</p>
+          </div>
+          <div class="col-6">
+            <p><strong>Driver:</strong> ${updatedTrip.driver_name || "-"}</p>
+            <p><strong>Driver Contact:</strong> ${updatedTrip.driver_contact || "-"}</p>
+          </div>
+        </div>
+        <p style="font-family: monospace; text-align: center;">--------------------------------------------</p>
+        <h6 class="fw-bold text-primary">Payment Details</h6>
+        <div class="row small">
+          <div class="col-4">
+            <p><strong>Type:</strong> ${updatedTrip.payment_type}</p>
+            <p><strong>Payment Status:</strong> ${updatedTrip.payment_status}</p>
+          </div>
+          <div class="col-5">
+            <p><strong>Base Fare:</strong></p>
+            <p><strong>Discount:</strong></p>
+            <p><strong>Terminal Charges:</strong></p>
+            <p><strong>Surcharges:</strong></p>
+            <p><strong>Taxes:</strong></p>
+          </div> 
+          <div class="col-3">
+            <p>₹${parseInt(updatedTrip.base_fare)}</p>
+            <p>₹${updatedTrip.discount}</p>
+            <p>₹${updatedTrip.terminal_charges}</p>
+            <p>₹${updatedTrip.surcharges}</p>
+            <p>${updatedTrip.taxes}%</p>
+          </div> 
+        </div>
+        <p style="font-family: monospace; text-align: center;">--------------------------------------------</p>
+        <h5 class="fw-bold text-primary text-center">Total Amount : ₹${updatedTrip.total_amount}</h5>
+        <p style="font-family: monospace; text-align: center;">--------------------------------------------</p>
+        <h6 class="text-center"><strong>OTP:</strong> ${updatedTrip.otp}</h6>
+        <p style="font-family: monospace; text-align: center;">--------------------------------------------</p>
+      `;
+
+      // Show in the modal/container
+      document.getElementById("receiptTripDetails").innerHTML = lastFetchedTripHTML;
+    })
+    .catch(err => {
+      console.error("Error fetching trip details:", err);
+      alert("Unable to fetch latest trip details.");
+    });
+}
+
 function printTripReceipt() {
   if (!lastFetchedTripHTML) {
     alert("No trip details available to print.");
     return;
   }
 
-  // Create iframe
-  const iframe = document.createElement("iframe");
-  iframe.style.position = "absolute";
-  iframe.style.width = "0px";
-  iframe.style.height = "0px";
-  iframe.style.border = "none";
-  document.body.appendChild(iframe);
-
-  // Write content into iframe
-  const doc = iframe.contentWindow.document;
-  doc.open();
-  doc.write(`
+  const printWindow = window.open("", "_blank", "width=800,height=900");
+  printWindow.document.write(`
     <html>
     <head>
         <title>Trip Receipt</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> 
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
         <style>
-          @page { size: 80mm auto; margin: 0; } html, body { width: 80mm; margin: 0 !important; padding-right: 9px !important; font-family: "MS Reference Sans Serif", sans-serif; font-weight: bold; font-size: 10px; letter-spacing: 0.8px; color: black; } h5, h6 { font-weight: bold; margin: 0; padding: 0; text-align: center; } p { margin: 0; padding: 0; } .container-fluid, .row, .col-6, .col-12 { padding: 0 !important; margin: 0 !important; }
+          @page {
+              size: 80mm auto;
+              margin: 0;
+          }
+          html, body {
+              width: 80mm;
+              margin: 0 !important;
+              padding-right: 9px !important;
+              font-family: "MS Reference Sans Serif", sans-serif;
+              font-weight: bold;
+              font-size: 10px;
+              letter-spacing: 0.8px;
+              color: black;
+          }
+          h5, h6 {
+              font-weight: bold;
+              margin: 0;
+              padding: 0;
+              text-align: center;
+          }
+          p { margin: 0; padding: 0; }
+          .container-fluid, .row, .col-6, .col-12 {
+              padding: 0 !important;
+              margin: 0 !important;
+          }
         </style>
     </head>
     <body>
-        <div class="container-fluid">${lastFetchedTripHTML}</div>
+        <div class="container-fluid">
+          ${lastFetchedTripHTML}
+        </div>
     </body>
     </html>
   `);
-  doc.close();
+  printWindow.document.close();
+  printWindow.onload = function () {
+    printWindow.print();
+    printWindow.close();
+  };
+}
 
-  // Wait a moment, then print
-  iframe.contentWindow.focus();
-  iframe.contentWindow.print();
+function calculateDistance(fromInputId, toInputId) {
+  const from = document.getElementById(fromInputId).value;
+  const to = document.getElementById(toInputId).value;
 
-  // Cleanup
-  setTimeout(() => document.body.removeChild(iframe), 1000);
+  if (!from || !to) return;
+
+  const service = new google.maps.DistanceMatrixService();
+  service.getDistanceMatrix(
+    {
+      origins: [from],
+      destinations: [to],
+      travelMode: google.maps.TravelMode.DRIVING
+    },
+    (response, status) => {
+      if (status === "OK") {
+        const element = response.rows[0].elements[0];
+        if (element.status === "OK") {
+          const distanceText = element.distance.text;
+          const durationText = element.duration.text;
+
+          console.log("✅ Distance:", distanceText, "Duration:", durationText);
+
+          const estimatedBox = document.getElementById("estimatedDistance");
+          if (estimatedBox) {
+            estimatedBox.innerText = `Estimated Distance: ${distanceText} (Approx. ${durationText})`;
+          }
+        }
+      } else {
+        console.error("DistanceMatrix failed:", status);
+      }
+    }
+  );
 }
