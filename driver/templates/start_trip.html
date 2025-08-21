@@ -36,7 +36,7 @@
 
         .main-content {
             min-height: 30vh;
-            max-height: 30vh;
+            max-height: 55vh; /* Changed: Increased height to allow more content */
             padding: 20px;
             background-color: #f8f8f8;
             max-width: 420px;
@@ -51,8 +51,15 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            padding-bottom: 90px;
-            overflow-y: hidden;
+            padding-bottom: 100px; /* Changed: Increased padding to clear fixed button */
+            overflow-y: scroll; /* Changed: Enabled vertical scrolling */
+            -ms-overflow-style: none; /* For Internet Explorer and Edge */
+            scrollbar-width: none; /* For Firefox */
+        }
+        
+        /* WebKit-based browsers (Chrome, Safari, Opera) */
+        .main-content::-webkit-scrollbar {
+            display: none; /* Changed: Hide the scrollbar */
         }
 
         .ride-card {
@@ -343,7 +350,8 @@
                         driverMarker.setPosition(pos);
                         map.setCenter(pos);
                         map.setZoom(15);
-                        showMessage('Live location updated', false);
+                        // The message below has been removed to stop the popup:
+                        // showMessage('Live location updated', false);
                     },
                     (error) => {
                         console.error('Geolocation error:', error);

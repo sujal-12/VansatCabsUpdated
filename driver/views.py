@@ -135,38 +135,20 @@ def mobileapp(request):
     if driver_id:
         try:
             driver = DriverRegistration.objects.get(id=driver_id)
-
-            # Fetch all assigned trips excluding completed ones
-            assigned_trips = Trip.objects.filter(
-                driver_contact=driver.drivermobileno
-            ).exclude(status='Completed')
-
-            # Get today's date
             today = timezone.now().date()
-
-            # Fetch today's notifications
-            pending_trips = assigned_trips.filter(status='Pending', date=today)
-            cancelled_trips = assigned_trips.filter(status='Cancelled', date=today)
-            remarks_today = DriverRemark.objects.filter(
-                driver=driver,
-                created_at__date=today
-            ).order_by('-created_at')
 
             # Remarks Check
             five_days_ago = timezone.now() - timedelta(days=5)
             recent_remarks = driver.remarks.filter(created_at__gte=five_days_ago).order_by('-created_at')
             session_counter_key = f'remark_count_{driver_id}_{today}'
 
-            if recent_remarks.exists():
-                print("=== Latest Remark ===", recent_remarks.first().remark_text)
-
-            old_remarks = driver.remarks.filter(created_at__lt=five_days_ago)
-            if old_remarks.exists() and driver.is_active:
-                driver.is_active = False
-                driver.save()
-                messages.error(request, "Your account has been deactivated due to unresolved remarks.")
-                return redirect('driver_login')
-
+            if recent_remarks.exists() and driver.is_active:
+                if driver.is_active:
+                    driver.is_active = False
+                    driver.save()
+                    messages.error(request, "Your account has been deactivated due to unresolved remarks.")
+                    return redirect('driver_login')
+            
             show_count = request.session.get(session_counter_key, 0)
             if recent_remarks.exists() and show_count < 3:
                 latest_remark = recent_remarks.first()
@@ -195,22 +177,41 @@ def mobileapp(request):
                         messages.error(request, f"Your account has been deactivated due to expired {label.lower()}.")
                         return redirect('driver_login')
 
-            # Today's Metrics
-            today_completed_trips = Trip.objects.filter(
+            # Fetch all trips for today
+            todays_trips = Trip.objects.filter(
                 driver_contact=driver.drivermobileno,
-                status='Completed',
                 date=today
             )
+
+            # Separate trips by status for today's metrics
+            today_completed_trips = todays_trips.filter(status='Completed')
+            today_pending_trips = todays_trips.filter(status='Pending')
+            today_cancelled_trips = todays_trips.filter(status='Cancelled')
+
+            # Aggregate today's earnings
             today_total_earnings = today_completed_trips.aggregate(
                 total=models.Sum('driver_commission')
             )['total'] or 0
-
-            # Round the total earnings to a whole number
+            
             today_total_earnings = round(today_total_earnings)
             
             today_trip_count = today_completed_trips.count()
-            today_pending_count = pending_trips.count()
-            today_cancelled_count = cancelled_trips.count()
+            today_pending_count = today_pending_trips.count()
+            today_cancelled_count = today_cancelled_trips.count()
+
+            # Fetch all upcoming trips (not completed or cancelled) for the 'New Upcoming Ride' section
+            assigned_trips = Trip.objects.filter(
+                driver_contact=driver.drivermobileno,
+                status__in=['Pending', 'Ongoing']
+            ).exclude(status__in=['Completed', 'Cancelled']).order_by('date', 'time')
+
+            # Fetch notifications for the modal
+            pending_trips_modal = todays_trips.filter(status='Pending').order_by('-created_at')
+            cancelled_trips_modal = todays_trips.filter(status='Cancelled').order_by('-created_at')
+            remarks_today = DriverRemark.objects.filter(
+                driver=driver,
+                created_at__date=today
+            ).order_by('-created_at')
 
             context = {
                 'driver': driver,
@@ -220,8 +221,8 @@ def mobileapp(request):
                 'today_trip_count': today_trip_count,
                 'today_pending_count': today_pending_count,
                 'today_cancelled_count': today_cancelled_count,
-                'pending_trips': pending_trips,
-                'cancelled_trips': cancelled_trips,
+                'pending_trips': pending_trips_modal,
+                'cancelled_trips': cancelled_trips_modal,
                 'remarks': remarks_today,
             }
             return render(request, "mobileapp.html", context)
@@ -551,14 +552,12 @@ def get_trip_locations(request, trip_id):
         return JsonResponse({"status": "error", "message": "No locations found"}, status=404)
     return JsonResponse(trip_location.locations)
 
-
-
-
 @driver_login_required
 def complete_trip(request):
     driver_id = request.session.get('driver_id')
     try:
         driver = DriverRegistration.objects.get(id=driver_id)
+        # Find the ongoing trip for this specific driver
         assigned_trip = Trip.objects.filter(driver_contact=driver.drivermobileno, status='Ongoing').first()
 
         if not assigned_trip:
@@ -572,6 +571,7 @@ def complete_trip(request):
                 
                 extra_data = {}
                 extra_total = Decimal('0.00')
+                extra_data_decimal = {} # New dictionary to hold Decimal values
 
                 if add_charges == 'yes':
                     extra_keys = request.POST.getlist('extra_key[]')
@@ -579,12 +579,16 @@ def complete_trip(request):
                     
                     for key, value in zip(extra_keys, extra_values):
                         try:
-                            extra_data[key] = float(value)
-                        except ValueError:
+                            # Convert value to Decimal for calculations
+                            decimal_value = Decimal(value)
+                            extra_data_decimal[key] = decimal_value # Store as Decimal
+                            extra_data[key] = str(decimal_value) # Convert to string for JSONField
+                        except (ValueError, TypeError):
                             messages.error(request, "Invalid extra charge amount provided.")
                             return redirect('complete_trip')
 
-                    extra_total = Decimal(sum(extra_data.values()))
+                    # Calculate sum from the new dictionary with Decimal values
+                    extra_total = sum(extra_data_decimal.values(), Decimal('0.00'))
 
                 payment_method = request.POST.get('payment_method')
                 if payment_method:
@@ -600,17 +604,17 @@ def complete_trip(request):
                     assigned_trip.total_amount += extra_total
 
                 # Use timezone.now() to get a timezone-aware datetime
-                assigned_trip.end_time = timezone.now()  # <--- CORRECTED LINE
+                assigned_trip.end_time = timezone.now()
                 assigned_trip.status = 'Completed'
                 assigned_trip.save()
 
                 if 'verified_trip_id' in request.session:
                     del request.session['verified_trip_id']
 
+                # Update driver's status to active
                 driver.is_active = True
                 driver.save()
-
-                messages.success(request, "Trip marked as completed.")
+                messages.success(request, "Trip marked as completed and your status is now active.")
                 return redirect('mobileapp')
 
         context = {
